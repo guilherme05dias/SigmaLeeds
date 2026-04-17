@@ -55,10 +55,39 @@ progress_state = {"total": 0, "processed": 0, "pending": 0, "status": "Aguardand
 current_attachment = None
 current_excel = None
 current_campaign_id = None
+node_process = None
 
 @app.on_event("startup")
 async def startup():
     init_db()
+    global node_process
+    
+    # Iniciar Node.js em background
+    import subprocess
+    import sys
+    
+    node_script = os.path.join(os.path.dirname(__file__), "whatsapp-motor", "server.js")
+    if os.path.exists(node_script):
+        flags = 0
+        if os.name == 'nt':
+            flags = 0x08000000  # CREATE_NO_WINDOW
+        node_process = subprocess.Popen(
+            ["node", node_script],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=os.path.dirname(node_script),
+            creationflags=flags
+        )
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    global node_process
+    if node_process:
+        try:
+            node_process.terminate()
+            node_process.wait(timeout=2)
+        except:
+            pass
 
 def _validate_number(raw_num):
     if raw_num is None: return None

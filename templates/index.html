@@ -236,6 +236,12 @@
                     <i data-lucide="check-circle" size="48"></i>
                     <h4 style="margin-top: 12px;">Conectado!</h4>
                 </div>
+
+                <div id="motorErr" class="hidden" style="color: var(--color-status-error);">
+                    <i data-lucide="alert-circle" size="48"></i>
+                    <h4 style="margin-top: 12px;">Motor não acessível</h4>
+                    <button class="btn btn-outline" style="margin-top: 16px; margin-left: auto; margin-right: auto;" onclick="retryConnection()">Tentar novamente</button>
+                </div>
             </div>
 
             <div class="modal-footer" style="margin-top: 24px; text-align: right;">

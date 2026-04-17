@@ -214,9 +214,11 @@ const connStatusWrap = document.getElementById('connStatusWrap');
 const btnConnector = document.getElementById('btnConnector');
 
 let connectorInterval = null;
+let pollRetries = 0;
 
 function openConnector() {
     connectorModal.classList.remove('hidden');
+    pollRetries = 0;
     startConnectorPolling();
 }
 
@@ -232,10 +234,17 @@ async function closeConnector() {
     } catch(e) {}
 }
 
+function retryConnection() {
+    pollRetries = 0;
+    showConnectorState('waiting');
+    startConnectorPolling();
+}
+
 function startConnectorPolling() {
     if (connectorInterval) return;
+    pollRetries = 0;
     pollConnector();
-    connectorInterval = setInterval(pollConnector, 3000);
+    connectorInterval = setInterval(pollConnector, 1000); // 1s interval as requested
 }
 
 function stopConnectorPolling() {
@@ -276,8 +285,14 @@ async function pollConnector() {
                 openConnector();
             }
         } else {
-            showConnectorState('waiting');
-            btnConnector.innerHTML = '<i data-lucide="loader"></i> AGUARDANDO MOTOR...';
+            pollRetries++;
+            if (pollRetries > 10) {
+                stopConnectorPolling();
+                showConnectorState('error');
+            } else {
+                showConnectorState('waiting');
+                btnConnector.innerHTML = '<i data-lucide="loader"></i> AGUARDANDO MOTOR...';
+            }
         }
     } catch (e) {
         showConnectorState('error');
