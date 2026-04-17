@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapManager Pro v4.0</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* Small local overrides for header layout */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--theme_border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--theme_primary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--status-bar-height);
+            background: var(--theme_bg-surface);
+            border-top: 1px solid var(--theme_border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 11px;
+            color: var(--theme_text-weak);
+            z-index: 100;
+        }
+        .status-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 24px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot-green { background: var(--color-status-success); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <h2>ZapManager <span>Pro</span></h2>
+            </div>
+            
+            <div class="status-card">
+                <div class="badge badge-waiting" id="statusBadge">Aguardando</div>
+                
+                <div class="progress-wrap">
+                    <h1 class="pending-count"><span id="pendingCount">0</span></h1>
+                    <p class="pending-label">contatos pendentes</p>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button id="btnStart" class="btn btn-primary" onclick="startCampaign()">
+                    <i data-lucide="play" size="16"></i> INICIAR
+                </button>
+                <button id="btnResume" class="btn btn-resume hidden" onclick="resumeCampaign()">
+                    <i data-lucide="play-circle" size="16"></i> RETOMAR
+                </button>
+                <button id="btnStop" class="btn btn-danger" onclick="stopCampaign()" disabled>
+                    <i data-lucide="square" size="16"></i> PARAR
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1>Nova Campanha</h1>
+                    <p>Configure e inicie seus disparos de forma profissional.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Trocar Tema">
+                        <i data-lucide="moon" size="18"></i>
+                    </button>
+                    <button class="btn btn-outline" id="btnConnector" onclick="openConnector()">
+                        <i data-lucide="smartphone" size="18"></i> WHATSAPP
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                
+                <!-- Coluna Esquerda: Arquivos e Mensagem -->
+                <div class="grid-left">
+                    <section class="card">
+                        <div class="card-header">
+                            <i data-lucide="file-spreadsheet"></i> <h3>1. Arquivo de Contatos</h3>
+                        </div>
+                        <div class="upload-zone" id="uploadZone">
+                            <i data-lucide="upload-cloud"></i>
+                            <p>Arraste uma planilha <strong>.xlsx</strong> aqui ou clique para selecionar</p>
+                            <input type="file" id="fileExcel" accept=".xlsx" hidden>
+                        </div>
+                        <div class="file-row">
+                            <p class="file-name" id="excelFileName">Nenhuma planilha carregada</p>
+                            <button class="btn-icon btn-remove-excel hidden" id="btnRemoveExcel" onclick="removeExcel()" title="Remover planilha" style="background:none;border:none;color:var(--color-status-error);cursor:pointer;">
+                                <i data-lucide="trash-2" size="16"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="card-header">
+                            <i data-lucide="message-square"></i> <h3>2. Mensagem</h3>
+                        </div>
+                        <p class="helper">Use <b>{nome}</b> e <b>{empresa}</b> como variáveis.</p>
+                        <textarea id="txtMessage" placeholder="Olá {nome}! Tudo bem?"></textarea>
+                        
+                        <div class="attachment-box" style="margin-top: 16px;">
+                            <div class="att-header" style="display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 8px;">
+                                <label class="switch">
+                                    <input type="checkbox" id="chkAttachment">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Anexar mídia</span>
+                            </div>
+                            
+                            <div id="attControls" class="att-controls hidden" style="background: var(--theme_bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--theme_border); display: flex; align-items: center; gap: 12px;">
+                                <button class="btn btn-outline" id="btnSelectAtt" onclick="document.getElementById('fileAtt').click()" style="padding: 6px 12px; font-size: 12px;">Escolher...</button>
+                                <input type="file" id="fileAtt" hidden onchange="uploadAttachment(this)">
+                                <span class="file-name" id="attFileName" style="font-size: 12px;">Nenhum anexo</span>
+                                <button class="btn-icon" id="btnClearAtt" onclick="clearAttachment()" style="background:none;border:none;color:var(--color-status-error);cursor:pointer;"><i data-lucide="x" size="14"></i></button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Coluna Direita: Regras e Logs -->
+                <div class="grid-right">
+                    <section class="card">
+                        <div class="card-header">
+                            <i data-lucide="settings"></i> <h3>3. Configurações</h3>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>Limite de disparos</label>
+                                <input type="number" id="inpLimit" value="100">
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label>Delay (segundos)</label>
+                                <div class="delay-wrap">
+                                    <input type="number" id="inpMin" value="16" style="width: 100%;">
+                                    <span>-</span>
+                                    <input type="number" id="inpMax" value="38" style="width: 100%;">
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item" style="display: flex; align-items: center; gap: 10px; padding-top: 8px;">
+                                <label class="switch" style="margin: 0;">
+                                    <input type="checkbox" id="chkKeepOpen">
+                                    <span class="slider"></span>
+                                </label>
+                                <span style="font-size: 13px;">Manter Chrome aberto</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card terminal-card" style="height: 100%; min-height: 250px;">
+                        <div class="card-header">
+                            <i data-lucide="terminal"></i> <h3>Monitor</h3>
+                        </div>
+                        <div class="terminal-box" id="terminalBox">
+                            [ZapManager] Inicializado...
+                        </div>
+                    </section>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+        <div class="status-bar-item">
+            <div class="status-dot dot-green"></div>
+            <span>V4.0 Online</span>
+        </div>
+        <div class="status-bar-item">
+            <i data-lucide="database" size="12"></i>
+            <span>SQLite Local</span>
+        </div>
+        <div class="status-bar-item" style="margin-left: auto;">
+            <span>Airtable Design System</span>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Modal -->
+    <div id="connectorModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <i data-lucide="smartphone" color="var(--theme_primary-brand)"></i>
+                <h3 style="font-size: 18px; font-weight: 500;">Conectar WhatsApp</h3>
+            </div>
+            
+            <div class="modal-body" style="text-align: center;">
+                <div id="connStatusWrap" style="margin-bottom: 24px;">
+                    <span id="connStatusText" style="font-size: 14px; color: var(--theme_text-weak);">Verificando...</span>
+                </div>
+
+                <div id="qrContainer" class="hidden">
+                    <p style="font-size: 13px; color: var(--theme_text-weak); margin-bottom: 16px;">Digitalize o código para fazer login.</p>
+                    <div style="background: #fff; padding: 16px; border-radius: 12px; border: 1px solid var(--theme_border); display: inline-block;">
+                        <img id="qrImage" src="" alt="QR Code" style="width: 200px; height: 200px;">
+                    </div>
+                </div>
+
+                <div id="connectedSuccess" class="hidden" style="color: var(--color-status-success);">
+                    <i data-lucide="check-circle" size="48"></i>
+                    <h4 style="margin-top: 12px;">Conectado!</h4>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="margin-top: 24px; text-align: right;">
+                <button class="btn btn-primary" onclick="closeConnector()" style="width: 100%;">CONCLUÍDO</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script>
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            
+            // Update icon
+            const themeBtn = document.querySelector('.theme-toggle');
+            if (newTheme === 'dark') {
+                themeBtn.innerHTML = '<i data-lucide="sun" size="18"></i>';
+            } else {
+                themeBtn.innerHTML = '<i data-lucide="moon" size="18"></i>';
+            }
+            lucide.createIcons();
+        }
+        
+        // Initialize Lucide again after potential innerHTML changes
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,9 @@
+{
+    "msg": "Teste Sistema",
+    "limit": 100,
+    "min": 10,
+    "max": 30,
+    "keep_open": true,
+    "last_file": "C:/Users/user/Downloads/planilha_contatos_reordenada (2).xlsx",
+    "last_attachment": "C:/Users/user/Downloads/Capturar.PNG"
+}

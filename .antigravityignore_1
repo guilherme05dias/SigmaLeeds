@@ -1,0 +1,82 @@
+# .antigravityignore — ZapManager Pro
+# Impede indexação de arquivos que o agente não precisa ler
+# Reduz consumo de tokens no background indexing
+
+# Dependências
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Build e dist
+dist/
+build/
+out/
+*.egg-info/
+.eggs/
+
+# Electron build
+electron/dist/
+electron/node_modules/
+
+# Dados e banco local
+data/
+*.db
+*.db-journal
+*.db-wal
+
+# Logs (o agente não precisa ler logs antigos)
+logs/
+*.log
+
+# Backups automáticos
+backups/
+
+# Perfis Chrome do WhatsApp (binários grandes)
+profiles/
+ZapManagerProfile/
+
+# Assets binários (imagens, vídeos, ícones)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.avi
+*.mov
+*.ico
+*.icns
+
+# Documentos gerados
+*.pdf
+*.docx
+*.xlsx
+
+# Lockfiles (desnecessário para o agente)
+package-lock.json
+yarn.lock
+poetry.lock
+Pipfile.lock
+
+# Cache e temporários
+.cache/
+tmp/
+temp/
+.temp/
+*.tmp
+
+# Git
+.git/
+
+# Chave privada — NUNCA indexar
+private_key.pem
+*.key
+*.pem
+
+# Arquivos de sistema Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/

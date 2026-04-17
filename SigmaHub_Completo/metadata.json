@@ -1,0 +1,5 @@
+{
+  "name": "ZapManager - Gestor de Contatos WhatsApp",
+  "description": "Sistema para apoio ao envio controlado e manual de mensagens pelo WhatsApp Web via planilha Excel.",
+  "requestFramePermissions": []
+}

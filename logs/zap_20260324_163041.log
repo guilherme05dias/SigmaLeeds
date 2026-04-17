@@ -1,0 +1,86 @@
+2026-03-24 16:30:41,561 [INFO] Campanha iniciada. Limite: 100, Intervalo: 10-30s
+2026-03-24 16:30:41,567 [INFO] Backup criado: backups\BKP_20260324_163041_planilha_contatos_reordenada.xlsx
+2026-03-24 16:30:41,567 [INFO] ====== WebDriver manager ======
+2026-03-24 16:30:42,479 [INFO] Get LATEST chromedriver version for google-chrome
+2026-03-24 16:30:42,495 [DEBUG] Starting new HTTPS connection (1): googlechromelabs.github.io:443
+2026-03-24 16:30:43,010 [DEBUG] https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 15838
+2026-03-24 16:30:43,029 [INFO] Get LATEST chromedriver version for google-chrome
+2026-03-24 16:30:43,029 [DEBUG] Starting new HTTPS connection (1): googlechromelabs.github.io:443
+2026-03-24 16:30:43,567 [DEBUG] https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 15838
+2026-03-24 16:30:43,618 [INFO] Driver [C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe] found in cache
+2026-03-24 16:30:43,629 [DEBUG] Skipping Selenium Manager; path to chrome driver specified in Service class: C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe
+2026-03-24 16:30:43,629 [DEBUG] Started executable: `C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe` in a child process with pid: 4172 using 0 to output -3
+2026-03-24 16:30:44,147 [DEBUG] POST http://localhost:53334/session {'capabilities': {'firstMatch': [{}], 'alwaysMatch': {'browserName': 'chrome', 'pageLoadStrategy': <PageLoadStrategy.normal: 'normal'>, 'goog:chromeOptions': {'excludeSwitches': ['enable-logging'], 'useAutomationExtension': False, 'extensions': [], 'args': ['user-data-dir=C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\ZapManagerProfile', '--profile-directory=Default', '--disable-notifications', '--no-first-run', '--disable-popup-blocking']}}}}
+2026-03-24 16:30:44,148 [DEBUG] Starting new HTTP connection (1): localhost:53334
+2026-03-24 16:30:44,296 [DEBUG] http://localhost:53334 "POST /session HTTP/1.1" 500 0
+2026-03-24 16:30:44,296 [DEBUG] Remote response: status=500 | data={"value":{"error":"session not created","message":"session not created: Chrome failed to start: crashed.\n  (session not created: DevToolsActivePort file doesn't exist)\n  (The process started from chrome location C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.)","stacktrace":"\tchromedriver!GetHandleVerifier [0x94cdf3+10b03]\n\tchromedriver!GetHandleVerifier [0x94cf24+10c34]\n\tchromedriver!(No symbol) [0x732120]\n\tchromedriver!(No symbol) [0x767666]\n\tchromedriver!(No symbol) [0x762690]\n\tchromedriver!(No symbol) [0x7a9cbf]\n\tchromedriver!(No symbol) [0x7a94d7]\n\tchromedriver!(No symbol) [0x79d8a6]\n\tchromedriver!(No symbol) [0x770229]\n\tchromedriver!(No symbol) [0x770fe4]\n\tchromedriver!GetHandleVerifier [0xbb48b9+2785c9]\n\tchromedriver!GetHandleVerifier [0xbafeb5+273bc5]\n\tchromedriver!GetHandleVerifier [0xbce06b+291d7b]\n\tchromedriver!GetHandleVerifier [0x965cc8+299d8]\n\tchromedriver!GetHandleVerifier [0x96d9fd+3170d]\n\tchromedriver!GetHandleVerifier [0x9558c8+195d8]\n\tchromedriver!GetHandleVerifier [0x955a92+197a2]\n\tchromedriver!GetHandleVerifier [0x93ee9a+2baa]\n\tKERNEL32!BaseThreadInitThunk [0x7576fcc9+19]\n\tntdll!RtlGetAppContainerNamedObjectPath [0x772982ae+11e]\n\tntdll!RtlGetAppContainerNamedObjectPath [0x7729827e+ee]\n"}} | headers=HTTPHeaderDict({'Content-Length': '1358', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-03-24 16:30:44,296 [DEBUG] Finished Request
+2026-03-24 16:30:46,312 [ERROR] Erro ao iniciar o Chrome: Message: session not created: Chrome failed to start: crashed.
+  (session not created: DevToolsActivePort file doesn't exist)
+  (The process started from chrome location C:\Program Files\Google\Chrome\Application\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x94cdf3+10b03]
+	chromedriver!GetHandleVerifier [0x94cf24+10c34]
+	chromedriver!(No symbol) [0x732120]
+	chromedriver!(No symbol) [0x767666]
+	chromedriver!(No symbol) [0x762690]
+	chromedriver!(No symbol) [0x7a9cbf]
+	chromedriver!(No symbol) [0x7a94d7]
+	chromedriver!(No symbol) [0x79d8a6]
+	chromedriver!(No symbol) [0x770229]
+	chromedriver!(No symbol) [0x770fe4]
+	chromedriver!GetHandleVerifier [0xbb48b9+2785c9]
+	chromedriver!GetHandleVerifier [0xbafeb5+273bc5]
+	chromedriver!GetHandleVerifier [0xbce06b+291d7b]
+	chromedriver!GetHandleVerifier [0x965cc8+299d8]
+	chromedriver!GetHandleVerifier [0x96d9fd+3170d]
+	chromedriver!GetHandleVerifier [0x9558c8+195d8]
+	chromedriver!GetHandleVerifier [0x955a92+197a2]
+	chromedriver!GetHandleVerifier [0x93ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x7576fcc9+19]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x772982ae+11e]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x7729827e+ee]
+
+2026-03-24 16:31:09,160 [INFO] Campanha iniciada. Limite: 100, Intervalo: 10-30s
+2026-03-24 16:31:09,168 [INFO] Backup criado: backups\BKP_20260324_163109_planilha_contatos_reordenada.xlsx
+2026-03-24 16:31:09,168 [INFO] ====== WebDriver manager ======
+2026-03-24 16:31:10,195 [INFO] Get LATEST chromedriver version for google-chrome
+2026-03-24 16:31:10,195 [DEBUG] Starting new HTTPS connection (1): googlechromelabs.github.io:443
+2026-03-24 16:31:10,714 [DEBUG] https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 15838
+2026-03-24 16:31:10,745 [INFO] Get LATEST chromedriver version for google-chrome
+2026-03-24 16:31:10,745 [DEBUG] Starting new HTTPS connection (1): googlechromelabs.github.io:443
+2026-03-24 16:31:11,279 [DEBUG] https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 15838
+2026-03-24 16:31:11,345 [INFO] Driver [C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe] found in cache
+2026-03-24 16:31:11,345 [DEBUG] Skipping Selenium Manager; path to chrome driver specified in Service class: C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe
+2026-03-24 16:31:11,345 [DEBUG] Started executable: `C:\Users\user\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32/chromedriver.exe` in a child process with pid: 11512 using 0 to output -3
+2026-03-24 16:31:11,860 [DEBUG] POST http://localhost:53343/session {'capabilities': {'firstMatch': [{}], 'alwaysMatch': {'browserName': 'chrome', 'pageLoadStrategy': <PageLoadStrategy.normal: 'normal'>, 'goog:chromeOptions': {'excludeSwitches': ['enable-logging'], 'useAutomationExtension': False, 'extensions': [], 'args': ['user-data-dir=C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\ZapManagerProfile', '--profile-directory=Default', '--disable-notifications', '--no-first-run', '--disable-popup-blocking']}}}}
+2026-03-24 16:31:11,860 [DEBUG] Starting new HTTP connection (1): localhost:53343
+2026-03-24 16:31:12,010 [DEBUG] http://localhost:53343 "POST /session HTTP/1.1" 500 0
+2026-03-24 16:31:12,010 [DEBUG] Remote response: status=500 | data={"value":{"error":"session not created","message":"session not created: Chrome failed to start: crashed.\n  (session not created: DevToolsActivePort file doesn't exist)\n  (The process started from chrome location C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.)","stacktrace":"\tchromedriver!GetHandleVerifier [0x94cdf3+10b03]\n\tchromedriver!GetHandleVerifier [0x94cf24+10c34]\n\tchromedriver!(No symbol) [0x732120]\n\tchromedriver!(No symbol) [0x767666]\n\tchromedriver!(No symbol) [0x762690]\n\tchromedriver!(No symbol) [0x7a9cbf]\n\tchromedriver!(No symbol) [0x7a94d7]\n\tchromedriver!(No symbol) [0x79d8a6]\n\tchromedriver!(No symbol) [0x770229]\n\tchromedriver!(No symbol) [0x770fe4]\n\tchromedriver!GetHandleVerifier [0xbb48b9+2785c9]\n\tchromedriver!GetHandleVerifier [0xbafeb5+273bc5]\n\tchromedriver!GetHandleVerifier [0xbce06b+291d7b]\n\tchromedriver!GetHandleVerifier [0x965cc8+299d8]\n\tchromedriver!GetHandleVerifier [0x96d9fd+3170d]\n\tchromedriver!GetHandleVerifier [0x9558c8+195d8]\n\tchromedriver!GetHandleVerifier [0x955a92+197a2]\n\tchromedriver!GetHandleVerifier [0x93ee9a+2baa]\n\tKERNEL32!BaseThreadInitThunk [0x7576fcc9+19]\n\tntdll!RtlGetAppContainerNamedObjectPath [0x772982ae+11e]\n\tntdll!RtlGetAppContainerNamedObjectPath [0x7729827e+ee]\n"}} | headers=HTTPHeaderDict({'Content-Length': '1358', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2026-03-24 16:31:12,010 [DEBUG] Finished Request
+2026-03-24 16:31:14,044 [ERROR] Erro ao iniciar o Chrome: Message: session not created: Chrome failed to start: crashed.
+  (session not created: DevToolsActivePort file doesn't exist)
+  (The process started from chrome location C:\Program Files\Google\Chrome\Application\chrome.exe is no longer running, so ChromeDriver is assuming that Chrome has crashed.); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x94cdf3+10b03]
+	chromedriver!GetHandleVerifier [0x94cf24+10c34]
+	chromedriver!(No symbol) [0x732120]
+	chromedriver!(No symbol) [0x767666]
+	chromedriver!(No symbol) [0x762690]
+	chromedriver!(No symbol) [0x7a9cbf]
+	chromedriver!(No symbol) [0x7a94d7]
+	chromedriver!(No symbol) [0x79d8a6]
+	chromedriver!(No symbol) [0x770229]
+	chromedriver!(No symbol) [0x770fe4]
+	chromedriver!GetHandleVerifier [0xbb48b9+2785c9]
+	chromedriver!GetHandleVerifier [0xbafeb5+273bc5]
+	chromedriver!GetHandleVerifier [0xbce06b+291d7b]
+	chromedriver!GetHandleVerifier [0x965cc8+299d8]
+	chromedriver!GetHandleVerifier [0x96d9fd+3170d]
+	chromedriver!GetHandleVerifier [0x9558c8+195d8]
+	chromedriver!GetHandleVerifier [0x955a92+197a2]
+	chromedriver!GetHandleVerifier [0x93ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x7576fcc9+19]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x772982ae+11e]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x7729827e+ee]
+

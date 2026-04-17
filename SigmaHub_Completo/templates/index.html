@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SigmaHub - Disparador de Automação</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+        // Fallback: se lucide não carregar, cria um stub para não travar a página
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('lucide')) {
+                window.lucide = { createIcons: function(){} };
+            }
+        }, true);
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <h2>Sigma<span>Hub</span></h2>
+            </div>
+            
+            <div class="status-card">
+                <div class="badge badge-waiting" id="statusBadge">Aguardando Planilha</div>
+                
+                <div class="progress-wrap">
+                    <h1 class="pending-count"><span id="pendingCount">0</span></h1>
+                    <p class="pending-label">contatos pendentes</p>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button id="btnStart" class="btn btn-primary" onclick="startCampaign()">
+                    <i data-lucide="play"></i> INICIAR CAMPANHA
+                </button>
+                <button id="btnResume" class="btn btn-resume hidden" onclick="resumeCampaign()">
+                    <i data-lucide="play-circle"></i> RETOMAR ENVIOS
+                </button>
+                <button id="btnStop" class="btn btn-danger" onclick="stopCampaign()" disabled>
+                    <i data-lucide="square"></i> PARAR
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1>Nova Campanha</h1>
+                    <p>Preencha os dados e dispare com responsabilidade.</p>
+                </div>
+                <button class="btn btn-outline" id="btnConnector" onclick="openConnector()">
+                    <i data-lucide="smartphone"></i> CONECTAR WHATSAPP
+                </button>
+            </header>
+
+            <div class="dashboard-grid">
+                
+                <!-- Coluna Esquerda: Arquivos e Mensagem -->
+                <div class="grid-left">
+                    <section class="card glass-card upload-card">
+                        <div class="card-header">
+                            <i data-lucide="file-spreadsheet"></i> <h3>1. Arquivo de Contatos</h3>
+                        </div>
+                        <div class="upload-zone" id="uploadZone">
+                            <i data-lucide="upload-cloud"></i>
+                            <p>Arraste uma planilha <strong>.xlsx</strong> aqui ou clique para selecionar</p>
+                            <input type="file" id="fileExcel" accept=".xlsx" hidden>
+                        </div>
+                        <div class="file-row">
+                            <p class="file-name" id="excelFileName">Nenhuma planilha carregada</p>
+                            <button class="btn-icon btn-remove-excel hidden" id="btnRemoveExcel" onclick="removeExcel()" title="Remover planilha">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <i data-lucide="message-square"></i> <h3>2. Conteúdo da Mensagem</h3>
+                        </div>
+                        <p class="helper">Use <b>{nome}</b> e <b>{empresa}</b> como variáveis de texto.</p>
+                        <textarea id="txtMessage" placeholder="Olá {nome}! Tudo bem?"></textarea>
+                        
+                        <div class="attachment-box">
+                            <div class="att-header">
+                                <label class="switch">
+                                    <input type="checkbox" id="chkAttachment">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Enviar Arquivo / Mídia junto</span>
+                            </div>
+                            
+                            <div id="attControls" class="att-controls hidden">
+                                <button class="btn btn-outline" id="btnSelectAtt" onclick="document.getElementById('fileAtt').click()">Escolher...</button>
+                                <input type="file" id="fileAtt" hidden onchange="uploadAttachment(this)">
+                                <span class="file-name" id="attFileName">Nenhum anexo</span>
+                                <button class="btn-icon" id="btnClearAtt" onclick="clearAttachment()" aria-label="Limpar Anexo"><i data-lucide="x"></i></button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Coluna Direita: Regras e Logs -->
+                <div class="grid-right">
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <i data-lucide="settings"></i> <h3>3. Regras de Disparo</h3>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>Limite na sessão (Qtd)</label>
+                                <input type="number" id="inpLimit" value="100">
+                            </div>
+                            
+                            <div class="setting-item double">
+                                <label>Delay (Mínimo - Máximo) em segundos</label>
+                                <div class="delay-wrap">
+                                    <input type="number" id="inpMin" value="16">
+                                    <span>até</span>
+                                    <input type="number" id="inpMax" value="38">
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item toggle-item">
+                                <label class="switch">
+                                    <input type="checkbox" id="chkKeepOpen">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Manter Chrome aberto no fim</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card glass-card terminal-card">
+                        <div class="card-header">
+                            <i data-lucide="terminal"></i> <h3>Monitor de Atividades</h3>
+                            <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+                        </div>
+                        <div class="terminal-box" id="terminalBox">
+                            [SigmaPDV] Terminal Inicializado...
+                        </div>
+                    </section>
+                </div>
+                
+            </div>
+
+        </main>
+    </div>
+
+    <!-- WhatsApp Connector Modal -->
+    <div id="connectorModal" class="modal hidden">
+        <div class="modal-content glass-card premium-card">
+            <div class="modal-header">
+                <i data-lucide="smartphone"></i>
+                <h3>Central de Conexão WhatsApp</h3>
+                <button class="btn-close" onclick="closeConnector()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="status-indicator-wrap" id="connStatusWrap">
+                    <div class="status-indicator waiting"></div>
+                    <span id="connStatusText">Verificando...</span>
+                </div>
+
+                <div id="qrContainer" class="qr-container hidden">
+                    <p class="qr-info">Aponte a câmera do seu celular para o código abaixo:</p>
+                    <div class="qr-img-wrap">
+                        <img id="qrImage" src="" alt="WhatsApp QR Code">
+                    </div>
+                </div>
+
+                <div id="connectedSuccess" class="connected-success hidden">
+                    <i data-lucide="check-circle"></i>
+                    <h4>WhatsApp Conectado!</h4>
+                    <p>Tudo pronto para os disparos.</p>
+                </div>
+
+                <div id="motorErr" class="motor-err hidden">
+                    <i data-lucide="alert-circle"></i>
+                    <h4>Erro no Motor Node.js</h4>
+                    <p>Fale com o suporte se o erro persistir.</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeConnector()">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+
