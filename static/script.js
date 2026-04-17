@@ -288,7 +288,7 @@ function showConnectorState(state) {
     connStatusWrap.classList.remove('hidden');
     qrContainer.classList.add('hidden');
     connectedSuccess.classList.add('hidden');
-    motorErr.classList.add('hidden');
+    if (motorErr) motorErr.classList.add('hidden');
 
     const indicator = connStatusWrap.querySelector('.status-indicator');
     if (indicator) {
@@ -304,7 +304,7 @@ function showConnectorState(state) {
         qrContainer.classList.remove('hidden');
     } else if (state === 'error') {
         connStatusText.textContent = "Erro de Conexão";
-        motorErr.classList.remove('hidden');
+        if (motorErr) motorErr.classList.remove('hidden');
         qrContainer.classList.add('hidden');
     } else {
         connStatusText.textContent = "Verificando motor...";
