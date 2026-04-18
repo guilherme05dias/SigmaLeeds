@@ -75,25 +75,18 @@ def delete_template(template_id: int) -> bool:
         if 'conn' in locals(): conn.close()
 
 def render_template(content: str, contact: dict) -> str:
-    """Substitui variáveis pelo dados do contato."""
+    import json
+    result = content
+    fields = {
+        'nome':    str(contact.get('name') or ''),
+        'empresa': str(contact.get('company') or ''),
+        'numero':  str(contact.get('phone') or ''),
+    }
     try:
-        mem = {}
-        if contact.get("name"): mem["nome"] = contact["name"]
-        if contact.get("company"): mem["empresa"] = contact["company"]
-        
-        extra = contact.get("extra_fields")
-        if extra:
-            try:
-                extra_dict = json.loads(extra) if isinstance(extra, str) else extra
-                for k, v in extra_dict.items():
-                    mem[k.lower()] = v
-            except:
-                pass
-                
-        def replacer(match):
-            key = match.group(1).lower()
-            return str(mem.get(key, match.group(0)))
-            
-        return re.sub(r'\{([^}]+)\}', replacer, content)
+        extra = json.loads(contact.get('extra_fields') or '{}')
+        fields.update({k.lower(): str(v) for k, v in extra.items()})
     except Exception:
-        return content
+        pass
+    for key, value in fields.items():
+        result = result.replace('{' + key + '}', value)
+    return result

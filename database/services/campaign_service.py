@@ -1,8 +1,44 @@
 import json
 import sqlite3
+import re
+import os
 import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from database.schema import get_connection
 from database.services.blacklist_service import is_blacklisted
+
+def normalize_phone(phone: str) -> str:
+    """
+    Normaliza número brasileiro para formato WhatsApp (somente dígitos, com 55).
+    Retorna None se inválido.
+    
+    Exemplos:
+        11999998888     → 5511999998888
+        5511999998888   → 5511999998888
+        (11) 99999-8888 → 5511999998888
+        1133334444      → 551133334444
+    """
+    digits = re.sub(r'\D', '', str(phone))
+    
+    if digits.startswith('55'):
+        if len(digits) >= 12:
+            return digits
+    
+    if len(digits) == 10: # Fixo sem 55
+        return "55" + digits
+    if len(digits) == 11: # Celular com 9 sem 55
+        return "55" + digits
+        
+    return None
+
+def update_campaign_message(campaign_id: int, message_template: str) -> None:
+    """Salva o template de mensagem na campanha antes de iniciar."""
+    from database.schema import get_connection
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE campaigns SET message_template = ? WHERE id = ?",
+            (message_template, campaign_id)
+        )
 
 def create_campaign(name: str, message_template: str, attachment_path: str = None, account_id: int = None) -> int:
     """Cria campanha e retorna o ID."""
@@ -55,10 +91,13 @@ def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
             
             results["total"] += 1
             
-            phone = str(row[phone_col]).strip() if len(row) > phone_col and row[phone_col] else ""
+            phone_raw = row[phone_col]
+            phone = normalize_phone(str(phone_raw))
+            
             if not phone:
-                results["errors"].append(f"Linha {index}: Telefone vazio")
+                results["errors"].append(f"Número inválido na linha {index}: {phone_raw}")
                 continue
+
                 
             name = str(row[name_col]).strip() if name_col != -1 and len(row) > name_col and row[name_col] else ""
             company = str(row[company_col]).strip() if company_col != -1 and len(row) > company_col and row[company_col] else ""
@@ -190,29 +229,94 @@ def get_campaign_history() -> list:
         conn.close()
 
 def export_campaign_to_xlsx(campaign_id: int, output_path: str) -> str:
-    """Exporta resultado da campanha para .xlsx. Retorna o caminho do arquivo."""
+    """
+    Exporta resultado da campanha para .xlsx com formatação.
+    Retorna o caminho do arquivo gerado.
+    """
+    import openpyxl
+    from openpyxl.styles import PatternFill, Font, Alignment
+    
     conn = get_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM campaign_contacts WHERE campaign_id = ? ORDER BY id ASC", (campaign_id,))
-        rows = cursor.fetchall()
+        cursor.execute('''
+            SELECT name, phone, company, status, sent_at, error_message 
+            FROM campaign_contacts WHERE campaign_id = ? ORDER BY id ASC
+        ''', (campaign_id,))
+        contacts = cursor.fetchall()
         
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.append(["ID", "Name", "Phone", "Company", "Status", "Sent At", "Error Message"])
+        ws.title = "Relatório"
         
-        for r in rows:
-            ws.append([
-                r['id'], r['name'], r['phone'], r['company'],
-                r['status'], r['sent_at'], r['error_message']
-            ])
-            
+        # Cabeçalho
+        headers = ["Nome", "Número", "Empresa", "Status", "Data/Hora Envio", "Observação"]
+        header_fill = PatternFill("solid", fgColor="2D7FF9")
+        header_font = Font(bold=True, color="FFFFFF")
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center")
+        
+        # Cores por status
+        status_colors = {
+            "ENVIADO":  ("D1F7C4", "0B6E1F"),
+            "ERRO":     ("FFDCE5", "8B1A2A"),
+            "INVÁLIDO": ("EAEAEA", "444444"),
+            "PENDENTE": ("FFEAB6", "7A4F00"),
+        }
+        
+        # Dados
+        for row_idx, contact in enumerate(contacts, 2):
+            bg = "F7F7F7" if row_idx % 2 == 0 else "FFFFFF"
+            row_data = [
+                contact["name"],
+                contact["phone"],
+                contact["company"],
+                contact["status"],
+                contact["sent_at"],
+                contact["error_message"],
+            ]
+            for col, value in enumerate(row_data, 1):
+                cell = ws.cell(row=row_idx, column=col, value=value)
+                if col == 4 and contact["status"] in status_colors:  # coluna Status
+                    fg, text = status_colors[contact["status"]]
+                    cell.fill = PatternFill("solid", fgColor=fg)
+                    cell.font = Font(color=text, bold=True)
+                else:
+                    cell.fill = PatternFill("solid", fgColor=bg)
+        
+        # Linha de resumo
+        total = len(contacts)
+        enviados  = sum(1 for c in contacts if c["status"] == "ENVIADO")
+        erros     = sum(1 for c in contacts if c["status"] == "ERRO")
+        invalidos = sum(1 for c in contacts if c["status"] == "INVÁLIDO")
+        pendentes = sum(1 for c in contacts if c["status"] == "PENDENTE")
+        
+        summary_row = total + 3
+        summary_text = f"Total: {total} | Enviados: {enviados} | Erros: {erros} | Inválidos: {invalidos} | Pendentes: {pendentes}"
+        ws.merge_cells(start_row=summary_row, start_column=1, end_row=summary_row, end_column=6)
+        summary_cell = ws.cell(row=summary_row, column=1, value=summary_text)
+        summary_cell.font = Font(bold=True)
+        summary_cell.alignment = Alignment(horizontal="center")
+        
+        # Ajustar largura das colunas
+        for col in ws.columns:
+            max_len = max((len(str(cell.value or "")) for cell in col), default=10)
+            ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+        
+        # Salvar
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         wb.save(output_path)
         return output_path
-    except Exception:
+    except Exception as e:
+        print(f"Erro ao exportar: {e}")
         return ""
     finally:
         conn.close()
+
 
 def reset_processing_contacts(campaign_id: int) -> int:
     """Reseta EM_PROCESSAMENTO → PENDENTE. Retorna quantidade resetada."""

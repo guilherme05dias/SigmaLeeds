@@ -1,2 +1,6 @@
-2026/04/14-17:58:42.869 11cc Creating DB C:\Users\user\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Local Storage\leveldb since it was missing.
-2026/04/14-17:58:43.070 11cc Reusing MANIFEST C:\Users\user\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/17-17:31:19.243 1888 Reusing MANIFEST C:\Users\Guilherme Dias\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/17-17:31:19.259 1888 Recovering log #7
+2026/04/17-17:31:19.264 1888 Reusing old log C:\Users\Guilherme Dias\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Local Storage\leveldb/000007.log 
+2026/04/17-17:47:11.515 3f58 Level-0 table #11: started
+2026/04/17-17:47:11.527 3f58 Level-0 table #11: 13238 bytes OK
+2026/04/17-17:47:11.532 3f58 Delete type=0 #7

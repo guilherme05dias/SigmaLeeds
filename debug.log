@@ -1,0 +1,153 @@
+C:\Users\Guilherme Dias\Desktop\SigmaLeeds\app.py:61: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+C:\Users\Guilherme Dias\Desktop\SigmaLeeds\app.py:84: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("shutdown")
+WARNING:root:Dica: Se for a primeira vez, verifique o console do Node para o QR Code.
+INFO:     Started server process [9864]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:5051 (Press CTRL+C to quit)
+Iniciando ZapManager Pro (FastAPI) em porta 5051...
+INFO:     127.0.0.1:53611 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /static/script.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /api/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "POST /api/contacts/import HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "POST /api/campaign/start HTTP/1.1" 200 OK
+WARNING:root:Dica: Se for a primeira vez, verifique o console do Node para o QR Code.
+ERROR:root:Erro no envio: Faltam argumentos para enviar (message ou filePath).
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+ERROR:root:Erro no envio: Faltam argumentos para enviar (message ou filePath).
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63977 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55760 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57729 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65326 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53001 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56802 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50476 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49988 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62126 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51090 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59061 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56763 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64627 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52421 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58916 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51426 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59713 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56818 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58510 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59417 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64574 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52018 - "GET /api/status HTTP/1.1" 200 OK

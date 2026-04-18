@@ -1,2 +1,4 @@
-2026/04/14-17:58:41.685 48c Creating DB C:\Users\user\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Extension Scripts since it was missing.
-2026/04/14-17:58:41.780 48c Reusing MANIFEST C:\Users\user\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Extension Scripts/MANIFEST-000001
+2026/04/17-11:42:26.799 5890 Creating DB C:\Users\Guilherme Dias\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Extension Scripts since it was missing.
+2026/04/17-11:42:26.824 5890 Reusing MANIFEST C:\Users\Guilherme Dias\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Extension Scripts/MANIFEST-000001
+2026/04/17-11:42:26.825 5890 Recovering log #3
+2026/04/17-11:42:26.825 5890 Reusing old log C:\Users\Guilherme Dias\Desktop\SigmaLeeds\whatsapp-motor\.wwebjs_auth\session\Default\Extension Scripts/000003.log 

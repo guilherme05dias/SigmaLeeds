@@ -265,6 +265,8 @@ class AutomationEngine:
 
     def send_message(self, number, message):
         """Envia apenas texto via API Node."""
+        if not message or message.strip() == "":
+            return "ERRO: Mensagem vazia"
         try:
             payload = {
                 "number": number,

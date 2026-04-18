@@ -3,6 +3,7 @@ from typing import Optional
 
 class StartCampaignRequest(BaseModel):
     campaign_id: int
+    message: str
     limit: Optional[int] = None
     min_interval: int = 15
     max_interval: int = 45

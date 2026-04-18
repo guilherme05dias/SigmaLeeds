@@ -5,273 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZapManager Pro v4.0</title>
     <link rel="stylesheet" href="/static/style.css">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <style>
-        /* Small local overrides for header layout */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--theme_border);
-            border-radius: 8px;
-            padding: 8px;
-            cursor: pointer;
-            color: var(--theme_primary-text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .status-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: var(--status-bar-height);
-            background: var(--theme_bg-surface);
-            border-top: 1px solid var(--theme_border);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            font-size: 11px;
-            color: var(--theme_text-weak);
-            z-index: 100;
-        }
-        .status-bar-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-right: 24px;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        .dot-green { background: var(--color-status-success); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <div class="logo-area">
-                <i data-lucide="zap" class="logo-icon"></i>
-                <h2>ZapManager <span>Pro</span></h2>
-            </div>
-            
-            <div class="status-card">
-                <div class="badge badge-waiting" id="statusBadge">Aguardando</div>
-                
-                <div class="progress-wrap">
-                    <h1 class="pending-count"><span id="pendingCount">0</span></h1>
-                    <p class="pending-label">contatos pendentes</p>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="progressBar"></div>
-                    </div>
+            <div class="sidebar-logo">
+                <i data-lucide="zap" color="var(--color-brand)" size="20"></i>
+                <div style="display: flex; flex-direction: column;">
+                    <span class="name">ZapManager Pro</span>
+                    <span class="plan">Plano Business</span>
                 </div>
             </div>
+            
+            <div class="nav-section-label">Menu Principal</div>
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="showPage('page-campaigns')" id="nav-campaigns">
+                    <i data-lucide="rocket" size="16"></i> Campanhas
+                </div>
+                <div class="nav-item" onclick="showPage('page-history')" id="nav-history">
+                    <i data-lucide="history" size="16"></i> Histórico
+                </div>
+                
+                <div class="nav-section-label">Sistema</div>
+                <div class="nav-item" onclick="showPage('page-monitor')" id="nav-monitor">
+                    <i data-lucide="terminal" size="16"></i> Monitor
+                </div>
+                <div class="nav-item" onclick="showPage('page-license')" id="nav-license">
+                    <i data-lucide="key" size="16"></i> Licença
+                </div>
+            </nav>
 
-            <div class="action-area">
-                <button id="btnStart" class="btn btn-primary" onclick="startCampaign()">
-                    <i data-lucide="play" size="16"></i> INICIAR
-                </button>
-                <button id="btnResume" class="btn btn-resume hidden" onclick="resumeCampaign()">
-                    <i data-lucide="play-circle" size="16"></i> RETOMAR
-                </button>
-                <button id="btnStop" class="btn btn-danger" onclick="stopCampaign()" disabled>
-                    <i data-lucide="square" size="16"></i> PARAR
-                </button>
+            <div style="margin-top: auto; padding-bottom: 16px;">
+                <div class="nav-item" onclick="openConnector()">
+                    <i data-lucide="smartphone" size="16"></i> Conectar WhatsApp
+                </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
-            <header class="top-header">
-                <div>
-                    <h1>Nova Campanha</h1>
-                    <p>Configure e inicie seus disparos de forma profissional.</p>
-                </div>
-                <div class="header-actions">
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Trocar Tema">
-                        <i data-lucide="moon" size="18"></i>
-                    </button>
-                    <button class="btn btn-outline" id="btnConnector" onclick="openConnector()">
-                        <i data-lucide="smartphone" size="18"></i> WHATSAPP
-                    </button>
-                </div>
-            </header>
+            
+            <!-- Page 1: Campanhas -->
+            <div id="page-campaigns" class="page active">
+                <h1>Campanhas</h1>
+                <p class="subtitle">Envio de mensagens em massa com inteligência e segurança.</p>
 
-            <div class="dashboard-grid">
-                
-                <!-- Coluna Esquerda: Arquivos e Mensagem -->
-                <div class="grid-left">
-                    <section class="card">
-                        <div class="card-header">
-                            <i data-lucide="file-spreadsheet"></i> <h3>1. Arquivo de Contatos</h3>
-                        </div>
-                        <div class="upload-zone" id="uploadZone">
-                            <i data-lucide="upload-cloud"></i>
-                            <p>Arraste uma planilha <strong>.xlsx</strong> aqui ou clique para selecionar</p>
-                            <input type="file" id="fileExcel" accept=".xlsx" hidden>
-                        </div>
-                        <div class="file-row">
-                            <p class="file-name" id="excelFileName">Nenhuma planilha carregada</p>
-                            <button class="btn-icon btn-remove-excel hidden" id="btnRemoveExcel" onclick="removeExcel()" title="Remover planilha" style="background:none;border:none;color:var(--color-status-error);cursor:pointer;">
-                                <i data-lucide="trash-2" size="16"></i>
-                            </button>
-                        </div>
-                    </section>
+                <div class="campaign-grid">
+                    <!-- Coluna Esquerda -->
+                    <div class="col-left">
+                        <section class="campaign-card">
+                            <h3>1. Importar Contatos</h3>
+                            <div id="upload-area" class="upload-area" onclick="document.getElementById('fileExcel').click()">
+                                <p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p>
+                                <p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>
+                                <input type="file" id="fileExcel" accept=".xlsx" hidden>
+                            </div>
 
-                    <section class="card">
-                        <div class="card-header">
-                            <i data-lucide="message-square"></i> <h3>2. Mensagem</h3>
-                        </div>
-                        <p class="helper">Use <b>{nome}</b> e <b>{empresa}</b> como variáveis.</p>
-                        <textarea id="txtMessage" placeholder="Olá {nome}! Tudo bem?"></textarea>
-                        
-                        <div class="attachment-box" style="margin-top: 16px;">
-                            <div class="att-header" style="display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 8px;">
-                                <label class="switch">
-                                    <input type="checkbox" id="chkAttachment">
-                                    <span class="slider"></span>
-                                </label>
-                                <span>Anexar mídia</span>
-                            </div>
-                            
-                            <div id="attControls" class="att-controls hidden" style="background: var(--theme_bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--theme_border); display: flex; align-items: center; gap: 12px;">
-                                <button class="btn btn-outline" id="btnSelectAtt" onclick="document.getElementById('fileAtt').click()" style="padding: 6px 12px; font-size: 12px;">Escolher...</button>
-                                <input type="file" id="fileAtt" hidden onchange="uploadAttachment(this)">
-                                <span class="file-name" id="attFileName" style="font-size: 12px;">Nenhum anexo</span>
-                                <button class="btn-icon" id="btnClearAtt" onclick="clearAttachment()" style="background:none;border:none;color:var(--color-status-error);cursor:pointer;"><i data-lucide="x" size="14"></i></button>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- Coluna Direita: Regras e Logs -->
-                <div class="grid-right">
-                    <section class="card">
-                        <div class="card-header">
-                            <i data-lucide="settings"></i> <h3>3. Configurações</h3>
-                        </div>
-                        <div class="settings-grid">
-                            <div class="setting-item">
-                                <label>Limite de disparos</label>
-                                <input type="number" id="inpLimit" value="100">
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label>Delay (segundos)</label>
-                                <div class="delay-wrap">
-                                    <input type="number" id="inpMin" value="16" style="width: 100%;">
-                                    <span>-</span>
-                                    <input type="number" id="inpMax" value="38" style="width: 100%;">
+                            <div id="import-summary" class="hidden" style="margin-top: 20px;">
+                                <div class="summary-cards">
+                                    <div class="summary-card total">
+                                        <div class="label">Total</div>
+                                        <div class="value" id="sumTotal">0</div>
+                                    </div>
+                                    <div class="summary-card valid">
+                                        <div class="label">Prontos</div>
+                                        <div class="value" id="sumReady">0</div>
+                                    </div>
+                                    <div class="summary-card invalid">
+                                        <div class="label">Inválidos</div>
+                                        <div class="value" id="sumInvalid">0</div>
+                                    </div>
+                                    <div class="summary-card blacklist">
+                                        <div class="label">Blacklist</div>
+                                        <div class="value" id="sumBlacklist">0</div>
+                                    </div>
+                                </div>
+                                
+                                <div id="contacts-table-wrap" class="contacts-table-wrap">
+                                    <table id="contactsTable" class="contacts-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="30">#</th>
+                                                <th>Nome</th>
+                                                <th>Número</th>
+                                                <th>Empresa</th>
+                                                <th>Status</th>
+                                                <th width="40"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="contactsBody">
+                                            <!-- Preenchido via JS -->
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            
-                            <div class="setting-item" style="display: flex; align-items: center; gap: 10px; padding-top: 8px;">
-                                <label class="switch" style="margin: 0;">
-                                    <input type="checkbox" id="chkKeepOpen">
-                                    <span class="slider"></span>
-                                </label>
-                                <span style="font-size: 13px;">Manter Chrome aberto</span>
-                            </div>
-                        </div>
-                    </section>
+                        </section>
 
-                    <section class="card terminal-card" style="height: 100%; min-height: 250px;">
-                        <div class="card-header">
-                            <i data-lucide="terminal"></i> <h3>Monitor</h3>
-                        </div>
-                        <div class="terminal-box" id="terminalBox">
-                            [ZapManager] Inicializado...
-                        </div>
-                    </section>
+                        <section class="campaign-card">
+                            <h3>2. Mensagem</h3>
+                            <textarea id="message-input" class="message-textarea" placeholder="Olá {nome}! Sua empresa {empresa} tem uma novidade..."></textarea>
+                            <div id="var-chips"></div>
+                            
+                            <div style="margin-top: 16px;">
+                                <button class="btn-danger" style="width: auto; padding: 0 16px; border-color: var(--color-border); color: var(--color-text-secondary);" onclick="document.getElementById('fileAtt').click()">
+                                    <i data-lucide="paperclip" size="14"></i> Anexar Mídia
+                                </button>
+                                <input type="file" id="fileAtt" hidden onchange="uploadAttachment(this)">
+                                <span id="attFileName" style="font-size: 11px; margin-left: 10px; color: var(--color-text-tertiary);">Nenhum arquivo</span>
+                            </div>
+                        </section>
+
+                        <section class="campaign-card">
+                            <div id="delay-toggle" class="collapse-toggle" onclick="toggleDelay()">
+                                <i data-lucide="chevron-right" size="14" id="delay-arrow-icon"></i> Configurações de intervalo
+                            </div>
+                            <div id="delay-panel" class="collapse-panel hidden">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <label>Mínimo (segundos)</label>
+                                        <input type="range" min="15" max="60" value="16" id="min-delay" oninput="document.getElementById('min-val').textContent = this.value">
+                                        <span id="min-val" style="font-weight:600; font-size:12px;">16</span>s
+                                    </div>
+                                    <div>
+                                        <label>Máximo (segundos)</label>
+                                        <input type="range" min="20" max="120" value="38" id="max-delay" oninput="document.getElementById('max-val').textContent = this.value">
+                                        <span id="max-val" style="font-weight:600; font-size:12px;">38</span>s
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Coluna Direita -->
+                    <div class="col-right">
+                        <section class="campaign-card">
+                            <h3>Preview da Mensagem</h3>
+                            <div id="message-preview-container">
+                                <div id="message-preview">
+                                    Digite algo para ver o preview...
+                                </div>
+                                <div style="clear:both"></div>
+                            </div>
+                            
+                            <div style="margin-top: 32px;">
+                                <button id="btnStart" class="btn-primary" onclick="startCampaign()">
+                                    <i data-lucide="play" size="18"></i> INICIAR DISPAROS
+                                </button>
+                                <button id="btnStop" class="btn-danger" onclick="stopCampaign()" disabled>
+                                    <i data-lucide="square" size="16"></i> PARAR CAMPANHA
+                                </button>
+                            </div>
+
+                            <div id="campaign-progress" class="progress-container hidden">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+                                    <span>Progresso</span>
+                                    <span id="progPct">0%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" id="progressBar"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 500;">
+                                    <span style="color: var(--color-success-text)">Enviados: <span id="progSent">0</span></span>
+                                    <span style="color: var(--color-danger-text)">Erros: <span id="progFailed">0</span></span>
+                                    <span id="progTotalCap" style="color: var(--color-text-tertiary)">Total: 0</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
-                
             </div>
+
+            <!-- Page 2: Histórico -->
+            <div id="page-history" class="page">
+                <h1>Histórico</h1>
+                <p class="subtitle">Campanhas finalizadas e relatórios.</p>
+                
+                <section class="campaign-card" style="padding: 0; overflow: hidden;">
+                    <table class="contacts-table">
+                        <thead>
+                            <tr>
+                                <th>Campanha</th>
+                                <th>Data</th>
+                                <th>Total</th>
+                                <th>Resultado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+            <!-- Page 3: Monitor -->
+            <div id="page-monitor" class="page">
+                <h1>Monitor</h1>
+                <p class="subtitle">Logs técnicos e monitoramento do motor.</p>
+
+                <section class="campaign-card">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                        <h3>Sessão de Logs</h3>
+                        <span class="link" style="font-size:12px; cursor:pointer" onclick="clearLogs()">Limpar</span>
+                    </div>
+                    <div class="monitor-box" id="monitor-logs" style="background:#1C1C1E; color:#fff; padding:16px; border-radius:8px; font-family:'JetBrains Mono'; font-size:12px; height:400px; overflow-y:auto;">
+                    </div>
+                </section>
+            </div>
+
+            <!-- Page 4: Licença -->
+            <div id="page-license" class="page">
+                <h1>Licença</h1>
+                <p class="subtitle">Status da sua conta e ativação.</p>
+
+                <section class="campaign-card" style="max-width: 500px;">
+                    <h3 id="license-plan-name">Checking...</h3>
+                    <p id="license-remaining" style="font-size:13px; margin-bottom:20px;"></p>
+                    
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="license-key-input" placeholder="Chave de ativação" style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--color-border);">
+                        <button class="btn-primary" style="width: auto; height: 38px;" onclick="activateNewLicense()">Ativar</button>
+                    </div>
+                </section>
+            </div>
+
         </main>
     </div>
 
-    <!-- Status Bar -->
-    <footer class="status-bar">
-        <div class="status-bar-item">
-            <div class="status-dot dot-green"></div>
-            <span>V4.0 Online</span>
-        </div>
-        <div class="status-bar-item">
-            <i data-lucide="database" size="12"></i>
-            <span>SQLite Local</span>
-        </div>
-        <div class="status-bar-item" style="margin-left: auto;">
-            <span>Airtable Design System</span>
-        </div>
-    </footer>
-
-    <!-- WhatsApp Modal -->
+    <!-- WhatsApp Connector Modal -->
     <div id="connectorModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <i data-lucide="smartphone" color="var(--theme_primary-brand)"></i>
-                <h3 style="font-size: 18px; font-weight: 500;">Conectar WhatsApp</h3>
-            </div>
+            <h3 style="margin-bottom: 8px;">WhatsApp</h3>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 24px;">Autentique-se para disparar as mensagens.</p>
             
-            <div class="modal-body" style="text-align: center;">
-                <div id="connStatusWrap" style="margin-bottom: 24px;">
-                    <span id="connStatusText" style="font-size: 14px; color: var(--theme_text-weak);">Verificando...</span>
+            <div id="connector-body" style="text-align: center;">
+                <div id="qrLoading">
+                    <i data-lucide="loader" class="animate-spin" size="32"></i>
+                    <p style="margin-top: 12px; font-size: 12px;">Iniciando motor...</p>
                 </div>
-
                 <div id="qrContainer" class="hidden">
-                    <p style="font-size: 13px; color: var(--theme_text-weak); margin-bottom: 16px;">Digitalize o código para fazer login.</p>
-                    <div style="background: #fff; padding: 16px; border-radius: 12px; border: 1px solid var(--theme_border); display: inline-block;">
-                        <img id="qrImage" src="" alt="QR Code" style="width: 200px; height: 200px;">
-                    </div>
+                    <img id="qrImage" src="" style="width: 250px; height: 250px; border: 1px solid var(--color-border); padding: 8px; border-radius: 8px;">
                 </div>
-
-                <div id="connectedSuccess" class="hidden" style="color: var(--color-status-success);">
-                    <i data-lucide="check-circle" size="48"></i>
-                    <h4 style="margin-top: 12px;">Conectado!</h4>
-                </div>
-
-                <div id="motorErr" class="hidden" style="color: var(--color-status-error);">
-                    <i data-lucide="alert-circle" size="48"></i>
-                    <h4 style="margin-top: 12px;">Motor não acessível</h4>
-                    <button class="btn btn-outline" style="margin-top: 16px; margin-left: auto; margin-right: auto;" onclick="retryConnection()">Tentar novamente</button>
+                <div id="connSuccess" class="hidden">
+                    <i data-lucide="check-circle" color="#0b6e1f" size="48"></i>
+                    <h4 style="margin-top: 16px; color: #0b6e1f;">Conectado!</h4>
                 </div>
             </div>
 
-            <div class="modal-footer" style="margin-top: 24px; text-align: right;">
-                <button class="btn btn-primary" onclick="closeConnector()" style="width: 100%;">CONCLUÍDO</button>
+            <div style="margin-top: 32px;">
+                <button class="btn-danger" style="width: 100%; border-color:var(--color-border); color:var(--color-text-secondary)" onclick="closeConnector()">FECHAR</button>
             </div>
         </div>
     </div>
 
     <script src="/static/script.js"></script>
     <script>
-        function toggleTheme() {
-            const root = document.documentElement;
-            const currentTheme = root.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            root.setAttribute('data-theme', newTheme);
-            
-            // Update icon
-            const themeBtn = document.querySelector('.theme-toggle');
-            if (newTheme === 'dark') {
-                themeBtn.innerHTML = '<i data-lucide="sun" size="18"></i>';
-            } else {
-                themeBtn.innerHTML = '<i data-lucide="moon" size="18"></i>';
-            }
-            lucide.createIcons();
-        }
-        
-        // Initialize Lucide again after potential innerHTML changes
         lucide.createIcons();
     </script>
 </body>
 </html>
-
-

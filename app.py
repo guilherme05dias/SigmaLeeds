@@ -18,7 +18,8 @@ from database.services.campaign_service import (
     create_campaign, import_contacts_from_xlsx,
     get_pending_contacts, update_contact_status,
     get_campaign_stats, get_campaign_history,
-    export_campaign_to_xlsx, reset_processing_contacts
+    export_campaign_to_xlsx, reset_processing_contacts,
+    normalize_phone, update_campaign_message
 )
 from database.services.blacklist_service import (
     add_to_blacklist, is_blacklisted, detect_optout_keywords, get_blacklist
@@ -51,10 +52,10 @@ is_running = False
 stop_requested = False
 was_stopped = False
 last_params = None
-progress_state = {"total": 0, "processed": 0, "pending": 0, "status": "Aguardando"}
 current_attachment = None
 current_excel = None
 current_campaign_id = None
+progress_state = {"total": 0, "processed": 0, "pending": 0, "sent": 0, "failed": 0, "invalid": 0, "status": "Aguardando"}
 node_process = None
 
 @app.on_event("startup")
@@ -62,7 +63,7 @@ async def startup():
     init_db()
     global node_process
     
-    # Iniciar Node.js em background
+        # Iniciar Node.js em background
     import subprocess
     import sys
     
@@ -71,8 +72,9 @@ async def startup():
         flags = 0
         if os.name == 'nt':
             flags = 0x08000000  # CREATE_NO_WINDOW
+        
         node_process = subprocess.Popen(
-            ["node", node_script],
+            ["node", "server.js"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             cwd=os.path.dirname(node_script),
@@ -90,12 +92,7 @@ async def shutdown_event():
             pass
 
 def _validate_number(raw_num):
-    if raw_num is None: return None
-    num = "".join(filter(str.isdigit, str(raw_num)))
-    if not num: return None
-    if 10 <= len(num) <= 11: num = "55" + num
-    if len(num) < 12 or len(num) > 13: return None
-    return num
+    return normalize_phone(raw_num)
 
 def _run_automation(campaign_id, params, resume=False):
     global is_running, stop_requested, was_stopped, engine, progress_state, last_params
@@ -138,6 +135,7 @@ def _run_automation(campaign_id, params, resume=False):
             update_contact_status(row_id, "INVÁLIDO", f"Número fora do padrão: {raw_num}")
             log_queue.put((f"[C-{row_id}] {nome}: número inválido ({raw_num})", "WARN"))
             progress_state["pending"] = max(0, progress_state["pending"] - 1)
+            progress_state["invalid"] += 1
             continue
 
         update_contact_status(row_id, "EM_PROCESSAMENTO")
@@ -161,15 +159,18 @@ def _run_automation(campaign_id, params, resume=False):
             count += 1
             progress_state["processed"] += 1
             progress_state["pending"] = max(0, progress_state["pending"] - 1)
+            progress_state["sent"] += 1
             log_queue.put((f"✔ {nome} — ENVIADO ({count}/{params['limit']})", "SUCCESS"))
         elif res == "INVALIDO" or res == "INVÁLIDO":
             update_contact_status(row_id, "INVÁLIDO", "WhatsApp informou número inválido")
             log_queue.put((f"✘ {nome} — INVÁLIDO", "WARN"))
             progress_state["pending"] = max(0, progress_state["pending"] - 1)
+            progress_state["invalid"] += 1
         else:
             update_contact_status(row_id, "ERRO", "Falha técnica na entrega")
             log_queue.put((f"✘ {nome} — ERRO técnico", "ERROR"))
             progress_state["pending"] = max(0, progress_state["pending"] - 1)
+            progress_state["failed"] += 1
 
         if not stop_requested and count < params['limit']:
             delay = random.randint(params['min'], params['max'])
@@ -347,7 +348,8 @@ async def get_status():
         "was_stopped": was_stopped,
         "progress": progress_state,
         "attachment": os.path.basename(current_attachment) if current_attachment else None,
-        "excel": current_excel
+        "excel": current_excel,
+        "campaign_id": current_campaign_id
     }
     return st
 
@@ -370,13 +372,17 @@ async def rest_start_campaign(req: StartCampaignRequest):
     if is_running: return {"success": False, "error": "A campanha já está ativa"}
     
     current_campaign_id = req.campaign_id
+    
+    # Salva o template no SQLite antes de tudo
+    update_campaign_message(current_campaign_id, req.message)
+    
     params = {
-        "msg": "", # To be fetched from db or default
+        "msg": req.message,
         "limit": req.limit if req.limit else 999999,
         "min": req.min_interval,
         "max": req.max_interval,
         "keep_open": False,
-        "attachment": None
+        "attachment": current_attachment # Pega o anexo carregado globalmente
     }
     
     run_thread = threading.Thread(target=_run_automation, args=(current_campaign_id, params))
@@ -392,16 +398,115 @@ async def rest_stop_campaign():
         return {"success": True, "message": "Campanha sendo pausada..."}
     return {"success": False, "error": "O sistema já está parado"}
 
-@app.get("/api/campaign/history")
+@app.get("/api/campaign/{campaign_id}/export")
+async def export_campaign(campaign_id: int):
+    """Exporta resultado da campanha em .xlsx para download."""
+    license_status = check_license()
+    if license_status["status"] in ["expired", "invalid"]:
+        return {"success": False, "error": license_status["message"]}
+    
+    output_path = f"data/relatorio_campanha_{campaign_id}.xlsx"
+    try:
+        file_path = export_campaign_to_xlsx(campaign_id, output_path)
+        if not file_path:
+            return {"success": False, "error": "Falha ao gerar o arquivo."}
+            
+        return FileResponse(
+            path=file_path,
+            filename=f"relatorio_campanha_{campaign_id}.xlsx",
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/contacts/validate-phone")
+async def validate_phone_endpoint(data: dict):
+    """Valida e normaliza um número de telefone."""
+    from database.services.campaign_service import normalize_phone
+    phone = data.get("phone", "")
+    normalized = normalize_phone(phone)
+    return {"valid": normalized is not None, "normalized": normalized or phone}
+
+@app.get("/api/campaigns/history")
 async def rest_get_history():
     return get_campaign_history()
 
 @app.post("/api/contacts/import")
-async def rest_import_contacts(req: ImportContactsRequest):
-    res = import_contacts_from_xlsx(req.campaign_id, req.xlsx_path)
-    if len(res["errors"]) > 0 and res["imported"] == 0:
-        return {"success": False, "error": str(res["errors"])}
-    return {"success": True, "data": res}
+async def import_contacts(file: UploadFile = File(...)):
+    """Recebe o .xlsx, salva temporariamente e importa para o SQLite."""
+    global current_campaign_id
+    try:
+        # Salvar arquivo temporário
+        tmp_path = f"data/tmp_{file.filename}"
+        os.makedirs("data", exist_ok=True)
+        with open(tmp_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+        
+        # Criar campanha temporária se não houver uma ativa
+        # No ZapManager v4, cada import gera uma nova campanha ou usa a global
+        campaign_name = f"Campanha {file.filename} - {time.strftime('%Y%m%d%H%M')}"
+        cid = create_campaign(campaign_name, "")
+        
+        if cid < 0:
+            return {"success": False, "error": "Erro ao criar campanha no banco."}
+        
+        # Importar contatos
+        result = import_contacts_from_xlsx(cid, tmp_path)
+        os.remove(tmp_path)
+        
+        current_campaign_id = cid
+        
+        # Preparar estatísticas para o frontend
+        pending_contacts = get_pending_contacts(cid)
+        stats = {
+            "campaign_id": cid,
+            "total": result["imported"] + result["skipped_blacklist"],
+            "imported": result["imported"],
+            "pending": len(pending_contacts),
+            "invalid": len(result["errors"]),
+            "skipped_blacklist": result["skipped_blacklist"],
+            "errors": result["errors"]
+        }
+        
+        return {
+            "success": True, 
+            "data": stats, 
+            "contacts": [dict(c) for c in pending_contacts]
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/contacts/{contact_id}/update")
+async def update_contact(contact_id: int, data: dict):
+    """Atualiza nome ou número de um contato."""
+    from database.schema import get_connection
+    try:
+        with get_connection() as conn:
+            if 'phone' in data:
+                conn.execute("UPDATE campaign_contacts SET phone=? WHERE id=?",
+                            (data['phone'], contact_id))
+            if 'name' in data:
+                conn.execute("UPDATE campaign_contacts SET name=? WHERE id=?",
+                            (data['name'], contact_id))
+            conn.commit()
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.delete("/api/contacts/{contact_id}/remove")
+async def remove_contact(contact_id: int):
+    """Remove contato da campanha."""
+    from database.schema import get_connection
+    try:
+        with get_connection() as conn:
+            conn.execute("DELETE FROM campaign_contacts WHERE id=?", (contact_id,))
+            conn.commit()
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @app.get("/api/blacklist")
 async def rest_list_blacklist():
