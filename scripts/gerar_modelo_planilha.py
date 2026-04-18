@@ -47,7 +47,7 @@ def gerar_modelo():
     import os
     # Garante que salva na raiz (subindo um nivel se estiver dentro de scripts ou apenas na raiz se cwd for SigmaLeeds)
     wb.save("contatos_modelo.xlsx")
-    print("✓ Arquivo 'contatos_modelo.xlsx' criado na raiz do projeto.")
+    print("Arquivo 'contatos_modelo.xlsx' criado na raiz do projeto.")
     print("\nVariáveis disponíveis para usar na mensagem:")
     for h in headers:
         print(f"  {{{h}}}")
