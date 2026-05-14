@@ -87,3 +87,20 @@ Nao foi feito `git push`, nao foi usado `--no-verify`, e nao foi usado `git comm
 - Validacao:
   - `python -m pytest tests/ license/ -v` -> `13 passed`
   - `python -c "import app; print('OK')"` -> `OK`
+
+## Campos adicionais na planilha/importador
+
+Planilha modelo:
+| Antes | Depois |
+|---|---|
+| Nome, Numero, Status, Empresa, Observacao, DataEnvio | Nome, Numero, Empresa, Adicional1, Adicional2, Adicional3 |
+
+Chips da UI:
+| Antes | Depois |
+|---|---|
+| nome, empresa, numero, adicional1, adicional2, adicional3 | nome, numero, empresa, adicional1, adicional2, adicional3 |
+
+Validacao:
+- `python -m pytest tests/ license/ -v` -> `15 passed`
+- `python -c "import app; print('OK')"` -> `OK`
+- Headers gerados por `build_template_workbook()` -> `['Nome', 'Numero', 'Empresa', 'Adicional1', 'Adicional2', 'Adicional3']`

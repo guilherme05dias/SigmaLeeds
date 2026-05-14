@@ -8,7 +8,7 @@ def build_template_workbook() -> openpyxl.Workbook:
     ws = wb.active
     ws.title = "Contatos"
 
-    headers = ["Nome", "Numero", "Status", "Empresa", "Observacao", "DataEnvio"]
+    headers = ["Nome", "Numero", "Empresa", "Adicional1", "Adicional2", "Adicional3"]
     header_fill = PatternFill("solid", fgColor="00A884")
     header_font = Font(name="Arial", bold=True, color="FFFFFF", size=11)
     border = Border(
@@ -26,11 +26,11 @@ def build_template_workbook() -> openpyxl.Workbook:
         cell.border = border
 
     rows = [
-        ("Maria Silva", "11999998888", "PENDENTE", "Empresa Alpha", "", ""),
-        ("Joao Souza", "21988887777", "PENDENTE", "Beta Ltda", "", ""),
-        ("Ana Paula", "31977776666", "PENDENTE", "", "", ""),
-        ("Carlos Mendes", "11133334444", "PENDENTE", "Gamma S/A", "", ""),
-        ("Teste Invalido", "000", "PENDENTE", "", "", ""),
+        ("Maria Silva", "11999998888", "Empresa Alpha", "Promo50", "ABC123", "Black Friday"),
+        ("Joao Souza", "21988887777", "Beta Ltda", "Promo30", "DEF456", "Cyber Monday"),
+        ("Ana Paula", "31977776666", "", "Promo20", "GHI789", ""),
+        ("Carlos Mendes", "11133334444", "Gamma S/A", "", "", ""),
+        ("Teste Invalido", "000", "", "", "", ""),
     ]
 
     alt_fill = PatternFill("solid", fgColor="F0FAF7")
@@ -42,7 +42,7 @@ def build_template_workbook() -> openpyxl.Workbook:
             if row_index % 2 == 0:
                 cell.fill = alt_fill
 
-    widths = [24, 16, 14, 22, 28, 18]
+    widths = [24, 16, 22, 18, 18, 22]
     for col_index, width in enumerate(widths, start=1):
         ws.column_dimensions[openpyxl.utils.get_column_letter(col_index)].width = width
 

@@ -86,3 +86,46 @@ def test_campaign():
     stats = get_campaign_stats(c_id)
     assert stats['sent'] == 1
     assert stats['pending'] == 0
+
+def test_campaign_extras_end_to_end():
+    c_id = create_campaign('Extras', 'Ola {nome}, codigo {adicional1}')
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Nome", "Numero", "Empresa", "Adicional1"])
+    ws.append(["Joao", "5511988887777", "Tech", "PROMO50"])
+    path = "test_extras.xlsx"
+    wb.save(path)
+    try:
+        res = import_contacts_from_xlsx(c_id, path)
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
+
+    assert res['imported'] == 1
+    pending = get_pending_contacts(c_id)
+    assert len(pending) == 1
+    contact = dict(pending[0])
+
+    import json as _json
+    extras = _json.loads(contact['extra_fields'])
+    assert extras.get('adicional1') == 'PROMO50'
+
+    rendered = render_template('Ola {nome}, codigo {adicional1}', contact)
+    assert 'PROMO50' in rendered
+    assert 'Joao' in rendered
+
+def test_import_normalizes_header_accents():
+    c_id = create_campaign('Acentos', 'Ola {nome}')
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["NÚMERO", "Nome"])
+    ws.append(["5511977776666", "Ana"])
+    path = "test_acentos.xlsx"
+    wb.save(path)
+    try:
+        res = import_contacts_from_xlsx(c_id, path)
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
+
+    assert res['imported'] == 1

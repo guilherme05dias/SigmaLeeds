@@ -3,6 +3,7 @@ import re
 import os
 import openpyxl
 import logging
+import unicodedata
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from database.schema import get_connection
 from database.services.blacklist_service import is_blacklisted
@@ -68,10 +69,16 @@ def normalize_phone(phone: str) -> str | None:
                 # Número internacional (não Brasil)
                 return digits
                 
-        return None
     except Exception:
         _log.exception("Erro ao normalizar telefone", extra={"phone": phone})
         return None
+
+def _norm_header(header) -> str:
+    if not header:
+        return ""
+    text = unicodedata.normalize("NFKD", str(header).lower())
+    text = text.encode("ASCII", "ignore").decode()
+    return text.strip()
 
 def update_campaign_message(campaign_id: int, message_template: str) -> None:
     try:
@@ -97,18 +104,27 @@ def create_campaign(name: str, message_template: str, attachment_path: str = Non
         conn.close()
 
 def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
+    PHONE_KEYS = {'numero', 'whatsapp', 'telefone', 'celular'}
+    NAME_KEYS = {'nome', 'cliente', 'contato'}
+    COMPANY_KEYS = {'empresa', 'razao_social', 'razao social'}
     results = {"total": 0, "imported": 0, "skipped_blacklist": 0, "duplicates_skipped": 0, "errors": []}
     try:
         wb = openpyxl.load_workbook(xlsx_path, data_only=True)
         sheet = wb.active
-        headers = [str(cell.value).strip().lower() if cell.value else f"col_{i}" for i, cell in enumerate(sheet[1])]
+        headers = [_norm_header(cell.value) for cell in sheet[1]]
         phone_col = -1
         name_col = -1
         company_col = -1
+        extra_cols = []
         for i, header in enumerate(headers):
-            if header in ['numero', 'whatsapp', 'telefone', 'celular']: phone_col = i
-            elif header in ['nome', 'cliente', 'contato']: name_col = i
-            elif header in ['empresa', 'razao_social']: company_col = i
+            if header in PHONE_KEYS and phone_col == -1:
+                phone_col = i
+            elif header in NAME_KEYS and name_col == -1:
+                name_col = i
+            elif header in COMPANY_KEYS and company_col == -1:
+                company_col = i
+            elif header:
+                extra_cols.append((i, header))
         
         if phone_col == -1:
             results["errors"].append("Coluna de telefone não encontrada.")
@@ -120,24 +136,28 @@ def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
             for index, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
                 if not row or not any(row): continue
                 results["total"] += 1
-                phone_raw = row[phone_col]
+                phone_raw = row[phone_col] if phone_col < len(row) else None
                 phone = normalize_phone(str(phone_raw))
                 if not phone:
                     results["errors"].append(f"Número inválido na linha {index}: {phone_raw}")
                     continue
+                name = str(row[name_col]).strip() if name_col != -1 and name_col < len(row) and row[name_col] else ""
+                company = str(row[company_col]).strip() if company_col != -1 and company_col < len(row) and row[company_col] else ""
+                extras_dict = {}
+                for col_index, header in extra_cols:
+                    value = row[col_index] if col_index < len(row) else None
+                    if value is not None and str(value).strip():
+                        extras_dict[header] = str(value).strip()
+                extras_json = json.dumps(extras_dict, ensure_ascii=False)
                 if is_blacklisted(phone):
                     results["skipped_blacklist"] += 1
-                    name = str(row[name_col]).strip() if name_col != -1 and row[name_col] else ""
-                    company = str(row[company_col]).strip() if company_col != -1 and row[company_col] else ""
                     conn.execute("""
                         INSERT OR IGNORE INTO campaign_contacts
                         (campaign_id, name, phone, company, extra_fields, status)
                         VALUES (?, ?, ?, ?, ?, 'BLACKLIST')
-                    """, (campaign_id, name, phone, company, "{}"))
+                    """, (campaign_id, name, phone, company, extras_json))
                     continue
-                name = str(row[name_col]).strip() if name_col != -1 and row[name_col] else ""
-                company = str(row[company_col]).strip() if company_col != -1 and row[company_col] else ""
-                rows_to_insert.append((campaign_id, name, phone, company, "{}"))
+                rows_to_insert.append((campaign_id, name, phone, company, extras_json))
 
             with conn:
                 cursor = conn.cursor()

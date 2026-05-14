@@ -279,7 +279,7 @@ function renderVariableChips(contacts) {
     const wrap = document.getElementById('var-chips');
     if (!wrap || !contacts || contacts.length === 0) return;
     
-    const defaultVars = ['nome', 'empresa', 'numero', 'adicional1', 'adicional2', 'adicional3'];
+    const defaultVars = ['nome', 'numero', 'empresa', 'adicional1', 'adicional2', 'adicional3'];
     let extraVars = [];
     try {
         const extra = JSON.parse(contacts[0].extra_fields || '{}');
