@@ -356,6 +356,70 @@
         </main>
     </div>
 
+    <!-- Onboarding Wizard -->
+    <div id="onboardingWizard" class="onboarding-overlay hidden" data-step="1">
+        <div class="onboarding-panel">
+            <div class="onboarding-header">
+                <div>
+                    <span class="onboarding-kicker">Primeira configuração</span>
+                    <h2>ZapManager Pro</h2>
+                </div>
+                <div class="onboarding-progress">
+                    <span class="onboarding-dot active" data-dot="1"></span>
+                    <span class="onboarding-dot" data-dot="2"></span>
+                    <span class="onboarding-dot" data-dot="3"></span>
+                    <span class="onboarding-dot" data-dot="4"></span>
+                </div>
+            </div>
+
+            <section class="onboarding-step active" data-step="1">
+                <i data-lucide="message-circle" size="32"></i>
+                <h3>Envios controlados pelo WhatsApp Web</h3>
+                <p>O ZapManager Pro permite enviar mensagens personalizadas para listas de contatos via WhatsApp Web, com rastreamento de status por contato e logs para auditoria.</p>
+                <p class="onboarding-legal">Use de forma responsável, ética e em conformidade com os Termos de Serviço do WhatsApp. Envios em massa podem resultar em bloqueio de conta.</p>
+            </section>
+
+            <section class="onboarding-step" data-step="2">
+                <i data-lucide="smartphone" size="32"></i>
+                <h3>Conecte o WhatsApp</h3>
+                <p>Leia o QR Code com o WhatsApp do telefone que será usado para os disparos. O wizard avança quando a sessão estiver pronta.</p>
+                <div class="onboarding-qr-box">
+                    <div id="onboardingQrLoading" class="onboarding-qr-state">
+                        <i data-lucide="loader" class="animate-spin" size="24"></i>
+                        <span>Aguardando QR Code...</span>
+                    </div>
+                    <img id="onboardingQrImage" class="hidden" alt="QR Code do WhatsApp">
+                    <div id="onboardingQrConnected" class="onboarding-qr-state hidden">
+                        <i data-lucide="check-circle" size="28"></i>
+                        <span>WhatsApp conectado.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="onboarding-step" data-step="3">
+                <i data-lucide="file-spreadsheet" size="32"></i>
+                <h3>Baixe a planilha modelo</h3>
+                <p>Use a planilha modelo para manter os campos esperados pelo importador: nome, número, empresa e campos adicionais.</p>
+                <button type="button" class="btn-primary onboarding-template-button" onclick="downloadOnboardingTemplate()">
+                    <i data-lucide="download" size="16"></i>
+                    Baixar planilha modelo
+                </button>
+            </section>
+
+            <section class="onboarding-step" data-step="4">
+                <i data-lucide="check-circle" size="32"></i>
+                <h3>Você está pronto</h3>
+                <p>Agora importe sua planilha, revise os contatos, escreva a mensagem e inicie a primeira campanha quando estiver dentro dos limites operacionais.</p>
+            </section>
+
+            <div class="onboarding-actions">
+                <button type="button" id="onboardingBackBtn" class="onboarding-secondary" onclick="previousOnboardingStep()">Voltar</button>
+                <button type="button" id="onboardingNextBtn" class="btn-primary" onclick="nextOnboardingStep()">Avançar</button>
+                <button type="button" id="onboardingFinishBtn" class="btn-primary hidden" onclick="completeOnboarding()">Concluir</button>
+            </div>
+        </div>
+    </div>
+
     <!-- WhatsApp Connector Modal -->
     <div id="connectorModal" class="modal hidden">
         <div class="modal-content">

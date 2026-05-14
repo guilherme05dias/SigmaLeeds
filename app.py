@@ -801,6 +801,17 @@ async def get_connector_status():
     except:
         return {"success": True, "data": {"connected": False, "qr": None, "waiting": True}}
 
+@app.get("/api/onboarding/status")
+async def onboarding_status():
+    value = get_config("onboarding_completed", "0")
+    completed = value is True or value == 1 or str(value) == "1"
+    return {"success": True, "data": {"completed": completed}}
+
+@app.post("/api/onboarding/complete")
+async def onboarding_complete():
+    set_config("onboarding_completed", "1")
+    return {"success": True, "data": {"completed": True}}
+
 @app.post("/api/whatsapp/disconnect")
 async def whatsapp_disconnect():
     """Desconecta a sessão atual do WhatsApp Web."""

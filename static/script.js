@@ -195,8 +195,10 @@ async function downloadTemplateWorkbook() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         showToast('Planilha modelo baixada.', 'success');
+        return true;
     } catch (err) {
         showToast(err.message || 'Erro ao baixar planilha modelo', 'error');
+        return false;
     }
 }
 
@@ -1023,6 +1025,128 @@ async function checkConnector() {
     }
 }
 
+let onboardingStep = 1;
+let onboardingTimer = null;
+let onboardingAutoAdvanced = false;
+
+async function initOnboarding() {
+    const wizard = document.getElementById('onboardingWizard');
+    if (!wizard) return;
+    const result = await apiBg('/api/onboarding/status');
+    const data = result.data || result;
+    if (data.completed) return;
+    openOnboardingWizard();
+}
+
+function openOnboardingWizard() {
+    onboardingAutoAdvanced = false;
+    const wizard = document.getElementById('onboardingWizard');
+    if (!wizard) return;
+    wizard.classList.remove('hidden');
+    setOnboardingStep(1);
+    if (window.lucide) lucide.createIcons();
+}
+
+function setOnboardingStep(step) {
+    onboardingStep = Math.max(1, Math.min(4, step));
+    const wizard = document.getElementById('onboardingWizard');
+    if (!wizard) return;
+    wizard.dataset.step = String(onboardingStep);
+
+    document.querySelectorAll('.onboarding-step').forEach(el => {
+        el.classList.toggle('active', el.dataset.step === String(onboardingStep));
+    });
+    document.querySelectorAll('.onboarding-dot').forEach(el => {
+        el.classList.toggle('active', Number(el.dataset.dot) <= onboardingStep);
+    });
+
+    const back = document.getElementById('onboardingBackBtn');
+    const next = document.getElementById('onboardingNextBtn');
+    const finish = document.getElementById('onboardingFinishBtn');
+    if (back) back.disabled = onboardingStep === 1;
+    if (next) next.classList.toggle('hidden', onboardingStep === 4);
+    if (finish) finish.classList.toggle('hidden', onboardingStep !== 4);
+
+    if (onboardingStep === 2) {
+        startOnboardingConnectorPoll();
+        if (next) next.disabled = true;
+    } else {
+        stopOnboardingConnectorPoll();
+        if (next) next.disabled = false;
+    }
+
+    if (onboardingStep === 3 && next) next.disabled = true;
+    if (window.lucide) lucide.createIcons();
+}
+
+function nextOnboardingStep() {
+    setOnboardingStep(onboardingStep + 1);
+}
+
+function previousOnboardingStep() {
+    setOnboardingStep(onboardingStep - 1);
+}
+
+function startOnboardingConnectorPoll() {
+    stopOnboardingConnectorPoll();
+    checkOnboardingConnector();
+    onboardingTimer = setInterval(checkOnboardingConnector, 2000);
+}
+
+function stopOnboardingConnectorPoll() {
+    if (onboardingTimer) {
+        clearInterval(onboardingTimer);
+        onboardingTimer = null;
+    }
+}
+
+async function checkOnboardingConnector() {
+    const result = await apiBg('/api/connector');
+    const data = result.data || result;
+    const loading = document.getElementById('onboardingQrLoading');
+    const image = document.getElementById('onboardingQrImage');
+    const connected = document.getElementById('onboardingQrConnected');
+    const next = document.getElementById('onboardingNextBtn');
+
+    if (data.connected) {
+        if (loading) loading.classList.add('hidden');
+        if (image) image.classList.add('hidden');
+        if (connected) connected.classList.remove('hidden');
+        if (next) next.disabled = false;
+        if (onboardingStep === 2 && !onboardingAutoAdvanced) {
+            onboardingAutoAdvanced = true;
+            setTimeout(() => setOnboardingStep(3), 800);
+        }
+        return;
+    }
+
+    if (data.qr && image) {
+        image.src = data.qr;
+        image.classList.remove('hidden');
+        if (loading) loading.classList.add('hidden');
+        if (connected) connected.classList.add('hidden');
+    } else {
+        if (loading) loading.classList.remove('hidden');
+        if (image) image.classList.add('hidden');
+        if (connected) connected.classList.add('hidden');
+    }
+    if (next) next.disabled = true;
+}
+
+async function downloadOnboardingTemplate() {
+    const ok = await downloadTemplateWorkbook();
+    if (ok) setOnboardingStep(4);
+}
+
+async function completeOnboarding() {
+    const result = await api('/api/onboarding/complete', { method: 'POST' });
+    if (result.success) {
+        stopOnboardingConnectorPoll();
+        document.getElementById('onboardingWizard')?.classList.add('hidden');
+        showToast('Configuração inicial concluída.', 'success');
+    }
+}
+
 async function disconnectWhatsApp() {
     const btn = document.getElementById('disconnectWaBtn');
     if (!btn) return;
@@ -1173,3 +1297,5 @@ function insertSpintax() {
     spintaxCursorPos + syntax.length
   );
 }
+
+initOnboarding();

@@ -498,6 +498,192 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 
 .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
 
+/* Onboarding Wizard */
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4, 14, 32, 0.5);
+    backdrop-filter: blur(3px);
+}
+
+.onboarding-panel {
+    width: min(680px, calc(100vw - 32px));
+    min-height: 520px;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-soft);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+}
+
+.onboarding-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.onboarding-kicker {
+    color: var(--color-brand);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.onboarding-header h2 {
+    color: var(--color-text-primary);
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.onboarding-progress {
+    display: flex;
+    gap: 8px;
+    padding-top: 6px;
+}
+
+.onboarding-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+}
+
+.onboarding-dot.active {
+    background: var(--color-brand);
+    border-color: var(--color-brand);
+}
+
+.onboarding-step {
+    display: none;
+    flex: 1;
+}
+
+.onboarding-step.active {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.onboarding-step > i {
+    color: var(--color-brand);
+    margin-bottom: 18px;
+}
+
+.onboarding-step h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 12px;
+}
+
+.onboarding-step p {
+    max-width: 560px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+}
+
+.onboarding-legal {
+    background: var(--color-warning-bg);
+    color: var(--color-warning) !important;
+    border: 1px solid var(--color-warning);
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+
+.onboarding-qr-box {
+    width: 280px;
+    min-height: 280px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.onboarding-qr-box img {
+    width: 240px;
+    height: 240px;
+    border-radius: 6px;
+    background: var(--color-bg-primary);
+}
+
+.onboarding-qr-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
+.onboarding-qr-state i {
+    color: var(--color-brand);
+}
+
+.onboarding-template-button {
+    width: auto;
+    min-width: 220px;
+    padding: 0 18px;
+    margin-top: 12px;
+}
+
+.onboarding-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+}
+
+.onboarding-actions .btn-primary {
+    width: auto;
+    min-width: 120px;
+    height: 38px;
+    margin-bottom: 0;
+    padding: 0 18px;
+}
+
+.onboarding-secondary {
+    height: 38px;
+    min-width: 96px;
+    padding: 0 16px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.onboarding-secondary:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+}
+
+.onboarding-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ── WhatsApp Disconnect Button ─────────────────────────── */
 .btn-disconnect-wa {
     display: inline-flex;
