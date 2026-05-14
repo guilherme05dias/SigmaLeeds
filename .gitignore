@@ -39,3 +39,4 @@ dist/
 build/
 release/
 electron/dist/
+electron/resources/engine/
