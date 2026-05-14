@@ -58,6 +58,7 @@ def check_license() -> dict:
                     "status": "active",
                     "plan": val["plan"],
                     "days_remaining": val["days_remaining"],
+                    "expires_at": val.get("expires_at"),
                     "limits": PLAN_LIMITS.get(val["plan"], PLAN_LIMITS["starter"]),
                     "message": f"Licença ativa. Plano: {val['plan'].upper()}"
                 }
@@ -75,8 +76,9 @@ def check_license() -> dict:
         if trial["active"]:
             return {
                 "status": "trial",
-                "plan": "starter",
+                "plan": "trial",
                 "days_remaining": trial["days_remaining"],
+                "trial_days": 7, # TRIAL_DAYS from trial.py
                 "limits": PLAN_LIMITS["starter"],
                 "message": f"Trial ativo ({trial['days_remaining']} dias restantes)"
             }
@@ -100,3 +102,22 @@ def check_license() -> dict:
 def get_current_plan_limits() -> dict:
     status = check_license()
     return status.get("limits", PLAN_LIMITS["starter"])
+
+def get_daily_limit() -> int:
+    """
+    Retorna o máximo de mensagens permitidas por dia para a licença atual.
+    Retorna 999999 se nenhum limite se aplica (plano Agency).
+    Retorna 300 (Starter) em caso de falha de leitura da licença.
+    """
+    try:
+        info = check_license()
+        plan = info.get("plan", "").lower() if info.get("plan") else "starter"
+        limits = {
+            "starter": 300,
+            "pro": 1000,
+            "agency": 999999,
+        }
+        return limits.get(plan, 300)
+    except Exception:
+        return 300  # fail safe: restringe se licença ilegível
+

@@ -1,5 +1,8 @@
 import json
+import logging
 from database.schema import get_connection
+
+_log = logging.getLogger("zapmanager.config")
 
 def get_config(key: str, default=None):
     """Lê configuração. Retorna default se não existir."""
@@ -17,6 +20,7 @@ def get_config(key: str, default=None):
         except:
             return val
     except Exception:
+        _log.exception("Failed in config operation")
         return default
     finally:
         if 'conn' in locals(): conn.close()
@@ -38,7 +42,8 @@ def set_config(key: str, value) -> None:
                 ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP
             ''', (key, val_str))
     except Exception:
-        pass
+        _log.exception("Failed in config operation")
+        return None
     finally:
         if 'conn' in locals(): conn.close()
 
@@ -57,6 +62,7 @@ def get_all_configs() -> dict:
                 results[row["key"]] = val
         return results
     except Exception:
+        _log.exception("Failed in config operation")
         return {}
     finally:
         if 'conn' in locals(): conn.close()
