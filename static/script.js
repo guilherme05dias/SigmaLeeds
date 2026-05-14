@@ -288,7 +288,7 @@ function renderVariableChips(contacts) {
     
     const allVars = [...new Set([...defaultVars, ...extraVars])];
     wrap.innerHTML = allVars.map(v => `
-        <span class="var-chip" onclick="insertVar('{{${escapeHtml(v)}}}')">{{${escapeHtml(v)}}}</span>
+        <span class="var-chip" onclick="insertVar('{${escapeHtml(v)}}')">{${escapeHtml(v)}}</span>
     `).join('');
 }
 
@@ -450,27 +450,37 @@ function updatePreview() {
         msgPreview.innerHTML = '<span style="color:var(--color-text-tertiary)">Digite sua mensagem para preview...</span>';
         return;
     }
-    
-    // Pega o primeiro contato para o preview
+
     const c = window.importedContacts[0] || { name: 'João Silva', phone: '5511999998888', company: 'Exemplo LTDA' };
-    
-    let preview = text
-        .replace(/{{nome}}/g, `<strong>${c.name || 'Cliente'}</strong>`)
-        .replace(/{{empresa}}/g, `<strong>${c.company || 'Empresa'}</strong>`)
-        .replace(/{{numero}}/g, `<strong>${c.phone || 'Número'}</strong>`);
-    
-    // Substituir campos extras se houver
+
+    const spintaxRegex = /\{([^{}]+\|[^{}]*)\}/g;
+    let processed = text;
+    while (spintaxRegex.test(processed)) {
+        processed = processed.replace(spintaxRegex, (_, group) => group.split('|')[0]);
+    }
+
+    // Convenção alinhada com database/services/template_service.py: placeholders usam 1 chave.
+    const substitutions = {
+        nome: c.name || 'Cliente',
+        empresa: c.company || 'Empresa',
+        numero: c.phone || 'Número',
+    };
+
     if (c.extra_fields) {
         try {
-            const extra = JSON.parse(c.extra_fields);
-            Object.keys(extra).forEach(k => {
-                const reg = new RegExp(`{{${k}}}`, 'g');
-                preview = preview.replace(reg, `<strong>${extra[k]}</strong>`);
-            });
+            const extra = typeof c.extra_fields === 'string' ? JSON.parse(c.extra_fields) : c.extra_fields;
+            Object.assign(substitutions, extra);
         } catch(e) {}
     }
-        
-    msgPreview.innerHTML = escapeHtml(preview).replace(/\n/g, '<br>');
+
+    let safe = escapeHtml(processed);
+    for (const [k, v] of Object.entries(substitutions)) {
+        const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const reg = new RegExp(`\\{${escapedKey}\\}`, 'g');
+        safe = safe.replace(reg, `<strong>${escapeHtml(String(v))}</strong>`);
+    }
+
+    msgPreview.innerHTML = safe.replace(/\n/g, '<br>');
 }
 
 function insertVar(variable) {
