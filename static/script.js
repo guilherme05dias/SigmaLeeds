@@ -590,6 +590,76 @@ function toggleDelay() {
     else icon.style.transform = 'rotate(90deg)';
 }
 
+function toggleSendWindow() {
+    const panel = document.getElementById('send-window-panel');
+    const icon = document.getElementById('send-window-arrow-icon');
+    if (!panel) return;
+    panel.classList.toggle('hidden');
+    if (icon) icon.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
+async function loadSendWindowConfig() {
+    const result = await apiBg('/api/config/send-window');
+    if (result && result.data) {
+        renderSendWindowConfig(result.data, result.state);
+    }
+}
+
+function collectSendWindowConfig() {
+    const days = [...document.querySelectorAll('.send-window-days input:checked')]
+        .map(input => Number(input.value));
+    return {
+        enabled: Boolean(document.getElementById('send-window-enabled')?.checked),
+        start: document.getElementById('send-window-start')?.value || '08:00',
+        end: document.getElementById('send-window-end')?.value || '20:00',
+        days
+    };
+}
+
+function renderSendWindowConfig(config, state = {}) {
+    const enabled = document.getElementById('send-window-enabled');
+    const start = document.getElementById('send-window-start');
+    const end = document.getElementById('send-window-end');
+    if (!enabled || !start || !end || !config) return;
+
+    enabled.checked = Boolean(config.enabled);
+    start.value = config.start || '08:00';
+    end.value = config.end || '20:00';
+
+    const selected = new Set(config.days || []);
+    document.querySelectorAll('.send-window-days input').forEach(input => {
+        input.checked = selected.has(Number(input.value));
+    });
+
+    const summary = document.getElementById('send-window-summary');
+    if (summary) {
+        const daysText = formatSendWindowDays(config.days || []);
+        const stateText = config.enabled
+            ? (state.allowed ? 'envios liberados agora' : 'fora da janela atual')
+            : 'janela desativada';
+        summary.textContent = `${config.enabled ? 'Ativa' : 'Inativa'}: ${config.start}–${config.end}, ${daysText}. ${stateText}.`;
+    }
+}
+
+function formatSendWindowDays(days) {
+    const names = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    if (!days.length) return 'sem dias selecionados';
+    return days.map(day => names[day]).filter(Boolean).join(', ');
+}
+
+async function saveSendWindowConfig() {
+    try {
+        const result = await api('/api/config/send-window', {
+            method: 'POST',
+            body: JSON.stringify(collectSendWindowConfig())
+        });
+        renderSendWindowConfig(result.data, result.state);
+        showToast('Janela de envio salva.', 'success');
+    } catch (err) {
+        showToast(err.message || 'Erro ao salvar janela de envio', 'error');
+    }
+}
+
 // --- History Logic ---
 let historyCache = [];
 let historyFiltersInitialized = false;
@@ -1298,4 +1368,5 @@ function insertSpintax() {
   );
 }
 
+loadSendWindowConfig();
 initOnboarding();

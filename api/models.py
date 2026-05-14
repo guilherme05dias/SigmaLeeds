@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class StartCampaignRequest(BaseModel):
@@ -25,3 +25,9 @@ class SaveConfigRequest(BaseModel):
 class CreateTemplateRequest(BaseModel):
     name: str
     content: str
+
+class SendWindowConfigRequest(BaseModel):
+    enabled: bool = False
+    start: str = "08:00"
+    end: str = "20:00"
+    days: list[int] = Field(default_factory=lambda: [0, 1, 2, 3, 4])

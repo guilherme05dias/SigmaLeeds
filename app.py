@@ -1,5 +1,6 @@
 import os
 import io
+from datetime import datetime
 from contextlib import asynccontextmanager
 import time
 import hashlib
@@ -71,9 +72,16 @@ from license.hardware import get_hardware_id
 from api.models import (
     StartCampaignRequest, ImportContactsRequest,
     ActivateLicenseRequest, AddBlacklistRequest,
-    SaveConfigRequest, CreateTemplateRequest
+    SaveConfigRequest, CreateTemplateRequest,
+    SendWindowConfigRequest
 )
 from database.services.template_service import create_template, get_all_templates, update_template, delete_template, render_template
+from database.services.send_window import (
+    DEFAULT_SEND_WINDOW,
+    is_within_window,
+    normalize_send_window_config,
+    seconds_until_window_opens,
+)
 from automation_state import CampaignRunner
 
 import re
@@ -347,6 +355,40 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def _validate_number(raw_num):
     return normalize_phone(raw_num)
 
+def _get_send_window_config() -> dict:
+    try:
+        return normalize_send_window_config(get_config("send_window", DEFAULT_SEND_WINDOW))
+    except ValueError:
+        logger.exception("Invalid send_window config; using default")
+        return dict(DEFAULT_SEND_WINDOW)
+
+def _get_send_window_state() -> dict:
+    config = _get_send_window_config()
+    now = datetime.now()
+    wait_s = seconds_until_window_opens(now, config)
+    return {
+        "allowed": is_within_window(now, config),
+        "seconds_until_open": wait_s,
+        "config": config,
+    }
+
+def _wait_for_send_window() -> bool:
+    while not runner.stop_requested:
+        state = _get_send_window_state()
+        if state["allowed"]:
+            return True
+
+        wait_s = max(1, int(state["seconds_until_open"]))
+        wait_min = max(1, wait_s // 60)
+        msg = f"Aguardando janela de horário ({wait_min} min)"
+        runner.update_progress(status=msg)
+        publish_log_threadsafe(f"[JANELA] Fora do horário de envio. {msg}.", "WARN")
+
+        if runner.stop_event.wait(timeout=min(wait_s, 60)):
+            return False
+
+    return False
+
 def _run_automation():
     try:
         campaign_id = runner.campaign_id
@@ -374,6 +416,9 @@ def _run_automation():
 
         for contact in pending_contacts:
             if runner.stop_requested or count >= params['limit']:
+                break
+
+            if not _wait_for_send_window():
                 break
 
             # Verificação de limite diário por plano
@@ -1131,6 +1176,19 @@ async def rest_update_template(id: int, req: CreateTemplateRequest):
 async def rest_delete_template(id: int):
     if delete_template(id): return {"success": True, "data": None}
     return {"success": False, "error": "Failed"}
+
+@app.get("/api/config/send-window")
+async def rest_get_send_window():
+    return {"success": True, "data": _get_send_window_config(), "state": _get_send_window_state()}
+
+@app.post("/api/config/send-window")
+async def rest_set_send_window(req: SendWindowConfigRequest):
+    try:
+        config = normalize_send_window_config(req.dict())
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+    set_config("send_window", config)
+    return {"success": True, "data": config, "state": _get_send_window_state()}
 
 @app.get("/api/config")
 async def rest_get_config():

@@ -158,6 +158,39 @@
                                 </div>
                             </div>
                         </section>
+
+                        <section class="campaign-card">
+                            <div id="send-window-toggle" class="collapse-toggle" onclick="toggleSendWindow()">
+                                <i data-lucide="chevron-right" size="14" id="send-window-arrow-icon"></i> Janela de horário
+                            </div>
+                            <div id="send-window-panel" class="collapse-panel hidden">
+                                <label class="send-window-enabled-row">
+                                    <input type="checkbox" id="send-window-enabled">
+                                    Habilitar janela de envio
+                                </label>
+                                <div class="send-window-time-grid">
+                                    <label>
+                                        Início
+                                        <input type="time" id="send-window-start" value="08:00">
+                                    </label>
+                                    <label>
+                                        Fim
+                                        <input type="time" id="send-window-end" value="20:00">
+                                    </label>
+                                </div>
+                                <div class="send-window-days" aria-label="Dias permitidos">
+                                    <label><input type="checkbox" value="0"> Seg</label>
+                                    <label><input type="checkbox" value="1"> Ter</label>
+                                    <label><input type="checkbox" value="2"> Qua</label>
+                                    <label><input type="checkbox" value="3"> Qui</label>
+                                    <label><input type="checkbox" value="4"> Sex</label>
+                                    <label><input type="checkbox" value="5"> Sáb</label>
+                                    <label><input type="checkbox" value="6"> Dom</label>
+                                </div>
+                                <button type="button" class="btn-primary send-window-save" onclick="saveSendWindowConfig()">Salvar janela</button>
+                                <p id="send-window-summary" class="send-window-summary"></p>
+                            </div>
+                        </section>
                     </div>
 
                     <!-- Coluna Direita -->
