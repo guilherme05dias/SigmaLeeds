@@ -1,16 +1,15 @@
 import base64
 import json
 import time
-from cryptography.hazmat.primitives.asymmetric import ed25519
+from pathlib import Path
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
 
-PUBLIC_KEY_PEM = b"""-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAi4r0+k3Z5s6R0T7Y2nU8n3Z1l8t/Bv6n6xNl2z2jUg0=
------END PUBLIC KEY-----"""
+PUBLIC_KEY_PATH = Path(__file__).parent / "public_key.pem"
 
 def get_public_key():
-    return serialization.load_pem_public_key(PUBLIC_KEY_PEM)
+    pem_bytes = PUBLIC_KEY_PATH.read_bytes()
+    return serialization.load_pem_public_key(pem_bytes)
 
 def validate_key(key_string: str) -> dict:
     result = {
@@ -45,7 +44,16 @@ def validate_key(key_string: str) -> dict:
             return result
             
         payload = json.loads(payload_bytes.decode('utf-8'))
-        
+
+        # Hardware binding — skip if key has no hardware_id (backward compat)
+        payload_hwid = payload.get("hardware_id", "")
+        if payload_hwid:
+            from license.hardware import get_hardware_id
+            current_hwid = get_hardware_id()
+            if payload_hwid != current_hwid:
+                result["error_message"] = "Licença vinculada a outro dispositivo"
+                return result
+
         current_time = int(time.time())
         expires_at = payload.get("expires_at", 0)
         

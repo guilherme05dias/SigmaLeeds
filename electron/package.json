@@ -1,0 +1,50 @@
+{
+  "name": "zapmanager-pro",
+  "version": "4.0.1",
+  "description": "ZapManager Pro - Automação WhatsApp",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build:installer": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^42.0.1",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.sigmaleeds.zapmanagerpro",
+    "productName": "ZapManager Pro",
+    "copyright": "Copyright 2026 SigmaLeeds",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "../resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "ZapManager Pro",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "extraResources": [
+      {
+        "from": "../resources",
+        "to": "resources"
+      },
+      {
+        "from": "resources/engine",
+        "to": "engine"
+      }
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "package.json"
+    ]
+  }
+}

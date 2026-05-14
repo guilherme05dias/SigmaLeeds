@@ -266,9 +266,9 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 }
 
 .contacts-table tr:hover td { background: var(--color-bg-tertiary); }
-.contacts-table tr.invalid td { background: #fff1f0; }
-.contacts-table tr.invalid td.phone { color: #cf1322; font-weight: 500; }
-.contacts-table tr.blacklisted td { background: #f5f5f5; color: #8c8c8c; text-decoration: line-through; opacity: 0.7; }
+.contacts-table tr.invalid td { background: var(--color-danger-bg); }
+.contacts-table tr.invalid td.phone { color: var(--color-danger-text); font-weight: 500; }
+.contacts-table tr.blacklisted td { background: var(--color-bg-tertiary); color: var(--color-text-secondary); text-decoration: line-through; opacity: 0.7; }
 
 .inline-edit-input:focus {
     outline: none;
@@ -323,18 +323,18 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 /* WhatsApp Preview */
 #message-preview-container {
     padding: 20px;
-    background: #E5DDD5; /* WhatsApp background */
+    background: var(--color-bg-tertiary); /* WhatsApp preview background */
     border-radius: 12px;
     min-height: 100px;
 }
 
 #message-preview {
-    background: #DCF8C6;
+    background: var(--color-success-bg);
     border-radius: 8px 8px 0 8px;
     padding: 10px 14px;
     font-size: 14px;
     line-height: 1.5;
-    color: #111;
+    color: var(--color-text-primary);
     word-break: break-word;
     box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
     position: relative;
@@ -347,7 +347,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
     width: 100%;
     height: 44px;
     background: var(--color-brand);
-    color: #FFFFFF;
+    color: var(--color-bg-primary);
     border: none;
     border-radius: 6px;
     font-size: 14px;
@@ -428,7 +428,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
   display: flex; align-items: center; justify-content: center; z-index: 1000;
 }
 .modal-content {
-  max-width: 440px; width: 90%; background: #fff; border-radius: 12px; padding: 32px;
+  max-width: 440px; width: 90%; background: var(--color-bg-primary); border-radius: 12px; padding: 32px;
   box-shadow: var(--shadow-soft);
 }
 
@@ -436,3 +436,246 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 .hidden { display: none !important; }
 .animate-spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* --- Spintax Editor --- */
+.chip-spintax {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+    border-color: var(--color-warning);
+}
+.chip-spintax:hover {
+    background: var(--color-warning-bg);
+}
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(4, 14, 32, 0.5); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
+
+.modal-box {
+    width: 440px; max-width: 90%; background: var(--color-bg-primary); 
+    border-radius: 8px; padding: 24px; box-shadow: var(--shadow-soft);
+    border: 0.5px solid var(--color-border);
+}
+
+.modal-box h3 { margin-bottom: 4px; font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+.modal-subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px; }
+
+.spintax-option-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.option-number { font-size: 13px; color: var(--color-text-tertiary); width: 16px; text-align: right; }
+
+.spintax-input {
+    flex: 1; height: 36px; padding: 0 12px; border: 1px solid var(--color-border);
+    border-radius: 6px; font-size: 14px; color: var(--color-text-primary);
+    outline: none; transition: border-color 120ms;
+}
+.spintax-input:focus { border-color: var(--color-brand); }
+
+.btn-remove-option {
+    background: none; border: none; color: var(--color-text-tertiary); cursor: pointer;
+    font-size: 16px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+}
+.btn-remove-option:hover { color: var(--color-danger); background: var(--color-danger-bg); }
+
+.btn-add-option {
+    background: none; border: none; color: var(--color-brand); font-size: 13px; font-weight: 500;
+    cursor: pointer; padding: 8px 0; display: inline-block; margin-bottom: 16px;
+}
+.btn-add-option:hover { text-decoration: underline; }
+
+.spintax-warning { font-size: 12px; color: var(--color-warning); background: var(--color-warning-bg); padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; border: 1px solid var(--color-warning); }
+
+.spintax-preview-box {
+    background: var(--color-bg-tertiary); padding: 12px 16px; border-radius: 6px;
+    margin-bottom: 24px; font-size: 13px; color: var(--color-text-primary);
+    border: 0.5px solid var(--color-border);
+}
+.spintax-preview-label { font-weight: 600; color: var(--color-text-secondary); margin-right: 6px; }
+
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+/* ── WhatsApp Disconnect Button ─────────────────────────── */
+.btn-disconnect-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-danger-text);
+    background: var(--color-danger-bg);
+    border: 1px solid var(--color-danger);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-disconnect-wa:hover {
+    background: var(--color-danger-bg);
+    border-color: var(--color-danger);
+}
+
+.btn-disconnect-wa:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* License Page - Redesigned */
+.license-page {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.license-card {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+}
+
+.license-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.license-status-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.license-status-badge.active { background: var(--color-success-bg); color: var(--color-success-text); }
+.license-status-badge.trial { background: var(--color-info-bg); color: var(--color-info-text); }
+.license-status-badge.expired, .license-status-badge.invalid { background: var(--color-danger-bg); color: var(--color-danger-text); }
+
+/* History Badges */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+.status-badge.successful { background: var(--color-success-bg); color: var(--color-success-text); }
+.status-badge.issues { background: var(--color-danger-bg); color: var(--color-danger-text); }
+.status-badge.pending { background: var(--color-info-bg); color: var(--color-info-text); }
+.status-badge.idle { background: var(--color-bg-tertiary); color: var(--color-text-secondary); }
+
+.license-plan-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.license-trial-progress {
+    margin: 16px 0;
+}
+
+.license-trial-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.license-progress-track {
+    height: 8px;
+    background: var(--color-bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.license-progress-bar {
+    height: 100%;
+    background: var(--color-brand);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.license-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border);
+    font-size: 14px;
+}
+
+.license-info-row:last-child { border-bottom: none; }
+
+.license-info-label { color: var(--color-text-secondary); }
+.license-info-value { color: var(--color-text-primary); font-weight: 500; }
+
+.license-hwid-wrap, .license-hwid-container {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    flex: 1;
+    justify-content: flex-end;
+    background: var(--color-bg-tertiary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.license-hwid-value, .license-mono {
+    font-family: monospace;
+    font-size: 0.75rem;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.btn-copy-hwid {
+    background: none;
+    border: none;
+    color: var(--color-brand);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.license-activation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.license-key-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: monospace;
+}
+
+.license-activation-feedback {
+    font-size: 12px;
+    text-align: center;
+    min-height: 18px;
+}

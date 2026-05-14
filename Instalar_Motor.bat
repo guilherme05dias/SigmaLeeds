@@ -24,7 +24,7 @@ if %errorlevel% neq 0 (
 
 echo [OK] Node.js detectado!
 echo Instalando dependencias do motor...
-cd /d "c:\Users\user\Desktop\SigmaLeeds\whatsapp-motor"
+cd /d "%~dp0whatsapp-motor"
 npm install
 
 echo.
