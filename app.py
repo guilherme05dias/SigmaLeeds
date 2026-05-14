@@ -1,4 +1,5 @@
 import os
+import io
 from contextlib import asynccontextmanager
 import time
 import hashlib
@@ -61,6 +62,7 @@ from database.services.blacklist_service import (
     add_to_blacklist, is_blacklisted, detect_optout_keywords, get_blacklist
 )
 from database.services.config_service import get_config, set_config
+from database.services.template_xlsx import build_template_workbook
 from database.services.account_service import (
     get_all_accounts, update_account_status
 )
@@ -585,6 +587,18 @@ async def logs_stream(request: Request):
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
         }
+    )
+
+@app.get("/api/template/contacts.xlsx")
+async def download_contacts_template():
+    buffer = io.BytesIO()
+    workbook = build_template_workbook()
+    workbook.save(buffer)
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="contatos_modelo.xlsx"'},
     )
 
 # Compatibility with frontend

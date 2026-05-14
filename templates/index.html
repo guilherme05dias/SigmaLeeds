@@ -59,10 +59,18 @@
                     <div class="col-left">
                         <section class="campaign-card">
                             <h3>1. Importar Contatos</h3>
-                            <div id="upload-area" class="upload-area" onclick="document.getElementById('fileExcel').click()">
-                                <p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p>
-                                <p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>
-                                <input type="file" id="fileExcel" accept=".xlsx" hidden>
+                            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:stretch;">
+                                <div id="upload-area" class="upload-area" onclick="document.getElementById('fileExcel').click()">
+                                    <p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p>
+                                    <p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>
+                                    <input type="file" id="fileExcel" accept=".xlsx" hidden>
+                                </div>
+                                <button type="button" class="btn-danger"
+                                    onclick="downloadTemplateWorkbook()"
+                                    style="width: 150px; height: auto; min-height: 40px; padding: 0 12px; border-color: var(--color-border); color: var(--color-text-secondary);">
+                                    <i data-lucide="download" size="16"></i>
+                                    Modelo
+                                </button>
                             </div>
 
                             <div id="import-summary" class="hidden" style="margin-top: 20px;">

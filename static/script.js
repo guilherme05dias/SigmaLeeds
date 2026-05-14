@@ -180,6 +180,26 @@ async function exportCampaign(campaignId) {
     }
 }
 
+async function downloadTemplateWorkbook() {
+    try {
+        const response = await fetch('/api/template/contacts.xlsx');
+        if (!response.ok) throw new Error('Erro ao baixar planilha modelo');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'contatos_modelo.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Planilha modelo baixada.', 'success');
+    } catch (err) {
+        showToast(err.message || 'Erro ao baixar planilha modelo', 'error');
+    }
+}
+
 // --- Page Navigation ---
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
