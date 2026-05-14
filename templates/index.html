@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZapManager Pro v4.0</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231E2A6E'/%3E%3Ctext x='32' y='44' font-size='36' text-anchor='middle' fill='%2325D366' font-family='Arial' font-weight='bold'%3EZ%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -93,6 +94,7 @@
                                                 <th>Número</th>
                                                 <th>Empresa</th>
                                                 <th>Status</th>
+                                                <th style="width:44px; text-align:center">PDF</th>
                                                 <th width="40"></th>
                                             </tr>
                                         </thead>
@@ -106,8 +108,19 @@
 
                         <section class="campaign-card">
                             <h3>2. Mensagem</h3>
-                            <textarea id="message-input" class="message-textarea" placeholder="Olá {nome}! Sua empresa {empresa} tem uma novidade..."></textarea>
-                            <div id="var-chips"></div>
+                            <textarea id="message-input" class="message-textarea" placeholder="Olá {{nome}}! Sua empresa {{empresa}} tem uma novidade..."></textarea>
+                            <div class="chips-toolbar">
+                              <button type="button" class="var-chip" onclick="insertVar('{{nome}}')">👤 nome</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{{empresa}}')">🏢 empresa</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{{numero}}')">📱 numero</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{{adicional1}}')">＋ adicional1</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{{adicional2}}')">＋ adicional2</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{{adicional3}}')">＋ adicional3</button>
+                              <button type="button" id="btn-spintax" class="var-chip chip-spintax"
+                                onclick="openSpintaxModal()" title="Inserir variação de texto aleatória">
+                                🔀 Variação
+                              </button>
+                            </div>
                             
                             <div style="margin-top: 16px;">
                                 <button class="btn-danger" style="width: auto; padding: 0 16px; border-color: var(--color-border); color: var(--color-text-secondary);" onclick="document.getElementById('fileAtt').click()">
@@ -157,6 +170,19 @@
                                 <button id="btnStop" class="btn-danger" onclick="stopCampaign()" disabled>
                                     <i data-lucide="square" size="16"></i> PARAR CAMPANHA
                                 </button>
+                                <button id="btn-export"
+                                    onclick="exportCampaign(window.activeCampaignId)"
+                                    style="width:100%; height:36px; margin-top:8px;
+                                           background:var(--color-bg-primary);
+                                           color:var(--color-text-secondary);
+                                           border:1px solid var(--color-border);
+                                           border-radius:6px; font-size:13px;
+                                           font-weight:500; cursor:pointer;
+                                           display:flex; align-items:center;
+                                           justify-content:center; gap:6px;
+                                           transition:background 120ms ease;">
+                                    ↓ Exportar Relatório
+                                </button>
                             </div>
 
                             <div id="campaign-progress" class="progress-container hidden">
@@ -183,14 +209,62 @@
                 <h1>Histórico</h1>
                 <p class="subtitle">Campanhas finalizadas e relatórios.</p>
                 
-                <section class="campaign-card" style="padding: 0; overflow: hidden;">
+                <div class="filters-container" style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end; background:var(--color-bg-secondary); padding:15px; border-radius:8px;">
+                    <div style="flex:1">
+                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Pesquisar</label>
+                        <input type="text" id="historySearch" placeholder="Nome da campanha..." style="width:100%; height:36px; padding:0 12px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    </div>
+                    <div style="width:150px">
+                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">De</label>
+                        <input type="date" id="historyDateFrom" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    </div>
+                    <div style="width:150px">
+                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Até</label>
+                        <input type="date" id="historyDateTo" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    </div>
+                    <div style="width:180px">
+                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Ordenar por</label>
+                        <select id="historySort" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                            <option value="date_desc">Mais recentes</option>
+                            <option value="date_asc">Mais antigas</option>
+                            <option value="rate_desc">Maior entrega</option>
+                            <option value="rate_asc">Menor entrega</option>
+                            <option value="failed_desc">Mais falhas</option>
+                            <option value="failed_asc">Menos falhas</option>
+                        </select>
+                    </div>
+                    <div style="width:180px">
+                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Status</label>
+                        <select id="historyStatus" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                            <option value="all">Todas</option>
+                            <option value="successful">Sucesso Total</option>
+                            <option value="failed">Com Falhas</option>
+                            <option value="pending">Com Pendentes</option>
+                            <option value="invalid">Com Inválidos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span id="historyResultCount" style="font-size:12px; color:var(--color-text-secondary); font-weight:500"></span>
+                </div>
+                
+                <div id="historyEmptyState" class="hidden" style="padding:60px 20px; text-align:center; background:var(--color-bg-secondary); border:1px dashed var(--color-border); border-radius:8px; margin-bottom:20px;">
+                    <i data-lucide="search-x" size="48" style="color:var(--color-text-secondary); margin-bottom:12px;"></i>
+                    <h3 style="margin-bottom:8px; color:var(--color-text-primary)">Nenhuma campanha encontrada</h3>
+                    <p style="font-size:14px; color:var(--color-text-secondary)">Tente ajustar seus filtros ou busca.</p>
+                </div>
+                
+                <section id="historyTableWrap" class="campaign-card" style="padding: 0; overflow: hidden;">
                     <table class="contacts-table">
                         <thead>
                             <tr>
                                 <th>Campanha</th>
+                                <th>Status</th>
                                 <th>Data</th>
                                 <th>Total</th>
                                 <th>Resultado</th>
+                                <th>Entrega</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -217,18 +291,58 @@
 
             <!-- Page 4: Licença -->
             <div id="page-license" class="page">
-                <h1>Licença</h1>
-                <p class="subtitle">Status da sua conta e ativação.</p>
+                <h1>Licença do Software</h1>
+                <p class="subtitle">Gerencie sua ativação e verifique o status do seu plano.</p>
 
-                <section class="campaign-card" style="max-width: 500px;">
-                    <h3 id="license-plan-name">Checking...</h3>
-                    <p id="license-remaining" style="font-size:13px; margin-bottom:20px;"></p>
-                    
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="license-key-input" placeholder="Chave de ativação" style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--color-border);">
-                        <button class="btn-primary" style="width: auto; height: 38px;" onclick="activateNewLicense()">Ativar</button>
+                <div class="license-page">
+                    <!-- Card de Status -->
+                    <div class="license-card">
+                        <div class="license-card-header">
+                            <span class="license-plan-name" id="license-plan-name">Carregando...</span>
+                            <span id="license-badge" class="license-status-badge">...</span>
+                        </div>
+
+                        <!-- Progress Bar (Visible only during Trial) -->
+                        <div id="license-trial-section" class="license-trial-progress" style="display:none">
+                            <div class="license-trial-label">
+                                <span>Período de Teste</span>
+                                <span id="license-trial-days">...</span>
+                            </div>
+                            <div class="license-progress-track">
+                                <div class="license-progress-bar" id="license-progress-bar"></div>
+                            </div>
+                        </div>
+
+                        <!-- Grid de Informações -->
+                        <div class="license-info-grid">
+                            <div class="license-info-row">
+                                <span class="license-info-label">Status</span>
+                                <span class="license-info-value" id="license-expiry-text">Verificando...</span>
+                            </div>
+                            <div class="license-info-row">
+                                <span class="license-info-label">Expira em:</span>
+                                <span class="license-info-value" id="license-expires-on">-</span>
+                            </div>
+                            <div class="license-info-row">
+                                <span class="license-info-label">ID do Hardware:</span>
+                                <div class="license-hwid-container">
+                                    <span id="license-hardware-id" class="license-mono">...</span>
+                                    <button class="btn-copy-hwid" onclick="copyHWID()">Copiar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </section>
+
+                    <!-- Card de Ativação -->
+                    <div class="license-card">
+                        <h3 style="font-size: 14px; margin-bottom: 12px;">Ativar Nova Chave</h3>
+                        <div class="license-activation-form">
+                            <input type="text" id="license-key-input" class="license-key-input" placeholder="ZMPRO-XXXX-XXXX-XXXX-XXXX">
+                            <button class="btn-primary" onclick="activateLicense()" id="btn-activate-license">Ativar Agora</button>
+                            <div id="license-activate-feedback" class="license-activate-feedback"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -251,6 +365,20 @@
                 <div id="connSuccess" class="hidden">
                     <i data-lucide="check-circle" color="#0b6e1f" size="48"></i>
                     <h4 style="margin-top: 16px; color: #0b6e1f;">Conectado!</h4>
+                    <button
+                        id="disconnectWaBtn"
+                        class="btn-disconnect-wa"
+                        onclick="disconnectWhatsApp()"
+                        title="Encerrar sessão do WhatsApp"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Desconectar
+                    </button>
                 </div>
             </div>
 
@@ -258,6 +386,97 @@
                 <button class="btn-danger" style="width: 100%; border-color:var(--color-border); color:var(--color-text-secondary)" onclick="closeConnector()">FECHAR</button>
             </div>
         </div>
+    </div>
+
+    <!-- History Details Modal -->
+    <div id="historyDetailsModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 900px; width: 95%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                    <h3 id="details-campaign-name">Detalhes da Campanha</h3>
+                    <p id="details-campaign-date" style="font-size: 12px; color: var(--color-text-secondary);"></p>
+                </div>
+                <button class="btn-close-modal" onclick="closeHistoryDetails()">✕</button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="summary-cards" style="margin-bottom: 24px;">
+                <div class="summary-card total" style="background: var(--color-bg-secondary)">
+                    <div class="label">Contatos</div>
+                    <div class="value" id="det-total">0</div>
+                </div>
+                <div class="summary-card valid">
+                    <div class="label">Enviados</div>
+                    <div class="value" id="det-sent">0</div>
+                </div>
+                <div class="summary-card invalid">
+                    <div class="label">Falhas</div>
+                    <div class="value" id="det-failed">0</div>
+                </div>
+                <div class="summary-card blacklist">
+                    <div class="label">Inválidos</div>
+                    <div class="value" id="det-invalid">0</div>
+                </div>
+            </div>
+
+            <!-- Contacts Table inside Modal -->
+            <div class="contacts-table-wrap" style="max-height: 400px; border: 1px solid var(--color-border);">
+                <table class="contacts-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>WhatsApp</th>
+                            <th>Status</th>
+                            <th>Erro/Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="det-contacts-body">
+                        <!-- JS filler -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="btn-retry-failed" class="btn-primary" style="width: auto; padding: 0 20px; background: #d46b08; border-color: #d46b08;" onclick="retryFailedMessages()">
+                    <i data-lucide="rotate-ccw" size="14"></i> RETENTAR ERROS
+                </button>
+                <button class="btn-danger" style="width: auto; padding: 0 20px; border-color: var(--color-border); color: var(--color-text-secondary);" onclick="closeHistoryDetails()">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spintax Modal -->
+    <div id="spintax-modal" class="modal-overlay" style="display:none">
+      <div class="modal-box">
+        <h3>Inserir Variação de Texto</h3>
+        <p class="modal-subtitle">
+          O sistema vai escolher uma opção aleatória para cada envio.
+        </p>
+
+        <div id="spintax-options-list">
+          <!-- options injected by JS -->
+        </div>
+
+        <button type="button" class="btn-add-option" onclick="addSpintaxOption()">
+          + Adicionar outra opção
+        </button>
+
+        <div id="spintax-warning" style="display:none" class="spintax-warning">
+          ⚠️ Muitas variações podem dificultar o preview.
+        </div>
+
+        <div class="spintax-preview-box">
+          <span class="spintax-preview-label">Preview:</span>
+          <span id="spintax-preview-text">—</span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary"
+            onclick="closeSpintaxModal()" style="width: auto; height: 38px; background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: 6px; font-weight: 500; padding: 0 16px; cursor: pointer;">Cancelar</button>
+          <button type="button" class="btn btn-primary"
+            onclick="insertSpintax()" style="width: auto; height: 38px; margin-bottom: 0;">Inserir</button>
+        </div>
+      </div>
     </div>
 
     <script src="/static/script.js"></script>

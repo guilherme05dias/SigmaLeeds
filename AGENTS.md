@@ -52,9 +52,9 @@ Ordem de execução dentro da fase:
 4. **[B] Empacotamento Electron** — empacotar tudo que já estiver funcionando
 
 ### 🔵 Fase 2 — Produto Completo (não iniciar até Fase 1 concluída)
-- Múltiplas contas WhatsApp
 - Biblioteca de templates
 - Histórico de campanhas
+- Anexo por contato (PDF individual)
 - Wizard de onboarding
 - Janela de horário de envio
 
