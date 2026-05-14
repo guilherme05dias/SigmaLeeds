@@ -1105,6 +1105,24 @@ async function checkConnector() {
     }
 }
 
+async function resetWhatsAppSession() {
+    if (!confirm('Isto vai apagar a sessao salva e gerar um novo QR Code. Continuar?')) return;
+
+    const data = await api('/api/whatsapp/reset', { method: 'POST' });
+    if (data.success) {
+        showToast('Sessao resetada. Aguardando novo QR...', 'info');
+        const qrLoading = document.getElementById('qrLoading');
+        const qrContainer = document.getElementById('qrContainer');
+        const connSuccess = document.getElementById('connSuccess');
+        if (qrLoading) qrLoading.classList.remove('hidden');
+        if (qrContainer) qrContainer.classList.add('hidden');
+        if (connSuccess) connSuccess.classList.add('hidden');
+        setTimeout(checkConnector, 3000);
+    } else {
+        showToast(data.error || 'Falha ao resetar sessao', 'error');
+    }
+}
+
 let onboardingStep = 1;
 let onboardingTimer = null;
 let onboardingAutoAdvanced = false;

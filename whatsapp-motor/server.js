@@ -184,6 +184,35 @@ app.post('/disconnect', async (req, res) => {
     }
 });
 
+app.post('/reset-session', async (req, res) => {
+    try {
+        clearSessionWatchdog();
+        try {
+            await client.destroy();
+        } catch {}
+
+        isReady = false;
+        currentQR = null;
+
+        const sessionPath = path.join(appDataDir, 'session');
+        try {
+            fs.rmSync(sessionPath, { recursive: true, force: true });
+        } catch {}
+
+        initAttempts = 0;
+        setTimeout(() => {
+            client.initialize();
+            armSessionWatchdog();
+        }, 1000);
+
+        console.log('[WA] Session reset requested. Waiting for new QR.');
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[WA] reset-session error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // Envio Poderoso (Aceita Mensagem, Arquivo ou Ambos)
 app.post('/send', async (req, res) => {
     if (!isReady) {

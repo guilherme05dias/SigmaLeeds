@@ -384,6 +384,21 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 
 .btn-danger:hover { background: var(--color-danger-bg); }
 
+.btn-reset-session {
+    margin-top: 12px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.btn-reset-session:hover {
+    color: var(--color-brand);
+}
+
 /* Collapse */
 .collapse-toggle {
     display: flex;

@@ -107,10 +107,20 @@ def _spawn_node_with_job(node_script_path: str):
     proc = subprocess.Popen(
         ["node", "server.js"],
         cwd=node_dir,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        creationflags=CREATE_NO_WINDOW
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        creationflags=CREATE_NO_WINDOW,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
     )
+
+    _threading.Thread(
+        target=_forward_node_logs,
+        args=(proc,),
+        daemon=True
+    ).start()
 
     if os.name == 'nt':
         try:
@@ -174,6 +184,20 @@ def _spawn_node_with_job(node_script_path: str):
             print(f"[WARN] Job Object falhou (não crítico): {e}")
 
     return proc
+
+def _should_forward_node_log(line: str) -> bool:
+    prefixes = ("[WA]", "[Watchdog]", "Falha", "Error", "SCANEAR QR", "Autenticado")
+    return line.startswith(prefixes)
+
+def _forward_node_logs(proc: subprocess.Popen) -> None:
+    if not proc.stdout:
+        return
+    for raw_line in proc.stdout:
+        line = raw_line.strip()
+        if not line or not _should_forward_node_log(line):
+            continue
+        level = "ERROR" if line.startswith(("Error", "Falha")) or " error:" in line.lower() else "INFO"
+        publish_log_threadsafe(f"[NODE] {line}", level)
 
 _node_health_failures = 0
 _node_health_lock = _threading.Lock()
@@ -897,6 +921,21 @@ async def whatsapp_disconnect():
             {"success": False, "error": str(e)},
             status_code=500
         )
+
+@app.post("/api/whatsapp/reset")
+async def whatsapp_reset():
+    """Reseta a sessão local do WhatsApp e força a geração de novo QR Code."""
+    if runner.is_running:
+        return JSONResponse(
+            {"success": False, "error": "Pare a campanha antes de resetar a sessão."},
+            status_code=409
+        )
+    try:
+        resp = http_requests.post("http://127.0.0.1:3001/reset-session", timeout=15)
+        return resp.json()
+    except Exception as e:
+        logger.exception("Failed to reset WhatsApp session")
+        return JSONResponse({"success": False, "error": str(e)}, status_code=502)
 
 # REST APIs Obrigatórias do Prompt
 @app.post("/api/campaign/start")
