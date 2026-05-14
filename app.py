@@ -841,10 +841,27 @@ async def get_status():
 @app.get("/api/connector")
 async def get_connector_status():
     try:
-        resp = http_requests.get("http://127.0.0.1:3001/status", timeout=2).json()
-        return resp
-    except:
-        return {"success": True, "data": {"connected": False, "qr": None, "waiting": True}}
+        node_resp = http_requests.get("http://127.0.0.1:3001/status", timeout=2).json()
+        return {
+            "success": True,
+            "data": {
+                "connected": bool(node_resp.get("connected", False)),
+                "status": node_resp.get("status", "unknown"),
+                "qr": node_resp.get("qr"),
+                "node_online": True,
+            }
+        }
+    except Exception as e:
+        logger.warning(f"Node motor unreachable: {e}")
+        return {
+            "success": True,
+            "data": {
+                "connected": False,
+                "status": "node_offline",
+                "qr": None,
+                "node_online": False,
+            }
+        }
 
 @app.get("/api/onboarding/status")
 async def onboarding_status():

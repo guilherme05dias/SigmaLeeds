@@ -421,6 +421,10 @@
                         <i data-lucide="loader" class="animate-spin" size="24"></i>
                         <span>Aguardando QR Code...</span>
                     </div>
+                    <div id="onboardingNodeOffline" class="onboarding-qr-state hidden">
+                        <i data-lucide="alert-triangle" size="24"></i>
+                        <span>Motor Node offline. Aguardando reinicialização...</span>
+                    </div>
                     <img id="onboardingQrImage" class="hidden" alt="QR Code do WhatsApp">
                     <div id="onboardingQrConnected" class="onboarding-qr-state hidden">
                         <i data-lucide="check-circle" size="28"></i>
@@ -464,6 +468,9 @@
                     <i data-lucide="loader" class="animate-spin" size="32"></i>
                     <p style="margin-top: 12px; font-size: 12px;">Iniciando motor...</p>
                 </div>
+                <p id="connectorNodeOffline" class="hidden" style="margin-top: 12px; font-size: 12px; color: var(--color-warning); background: var(--color-warning-bg); border: 1px solid var(--color-warning); border-radius: 6px; padding: 8px 12px;">
+                    Motor Node offline. Aguardando reinicialização...
+                </p>
                 <div id="qrContainer" class="hidden">
                     <img id="qrImage" src="" style="width: 250px; height: 250px; border: 1px solid var(--color-border); padding: 8px; border-radius: 8px;">
                 </div>

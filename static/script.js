@@ -1049,13 +1049,19 @@ function closeConnector() { document.getElementById('connectorModal').classList.
 
 async function checkConnector() {
     let res = await apiBg('/api/connector');
-    const data = res.data ? res.data : res; // Handle both direct response and wrapped {"success": true, "data": ...}
+    const data = res.data;
+    if (!data) return;
     
     const qrl = document.getElementById('qrLoading');
     const qrc = document.getElementById('qrContainer');
     const qrs = document.getElementById('connSuccess');
+    const nodeOffline = document.getElementById('connectorNodeOffline');
     const sidebarBtn = document.querySelector('.nav-item[onclick="openConnector()"]');
     
+    if (nodeOffline) {
+        nodeOffline.classList.toggle('hidden', data.node_online !== false);
+    }
+
     if (data.connected) {
         if (qrl) qrl.classList.add('hidden');
         if (qrc) qrc.classList.add('hidden');
@@ -1078,7 +1084,11 @@ async function checkConnector() {
         if (qrl) {
             qrl.classList.remove('hidden');
             const p = qrl.querySelector('p');
-            if (p) p.textContent = 'Sincronizando chats (Pode levar até 1 minuto)...';
+            if (p) {
+                p.textContent = data.node_online === false
+                    ? 'Motor Node offline. Aguardando reinicialização...'
+                    : 'Sincronizando chats (Pode levar até 1 minuto)...';
+            }
         }
         if (qrc) qrc.classList.add('hidden');
         if (qrs) qrs.classList.add('hidden');
@@ -1172,16 +1182,23 @@ function stopOnboardingConnectorPoll() {
 
 async function checkOnboardingConnector() {
     const result = await apiBg('/api/connector');
-    const data = result.data || result;
+    const data = result.data;
+    if (!data) return;
     const loading = document.getElementById('onboardingQrLoading');
     const image = document.getElementById('onboardingQrImage');
     const connected = document.getElementById('onboardingQrConnected');
+    const nodeOffline = document.getElementById('onboardingNodeOffline');
     const next = document.getElementById('onboardingNextBtn');
+
+    if (nodeOffline) {
+        nodeOffline.classList.toggle('hidden', data.node_online !== false);
+    }
 
     if (data.connected) {
         if (loading) loading.classList.add('hidden');
         if (image) image.classList.add('hidden');
         if (connected) connected.classList.remove('hidden');
+        if (nodeOffline) nodeOffline.classList.add('hidden');
         if (next) next.disabled = false;
         if (onboardingStep === 2 && !onboardingAutoAdvanced) {
             onboardingAutoAdvanced = true;
@@ -1195,6 +1212,7 @@ async function checkOnboardingConnector() {
         image.classList.remove('hidden');
         if (loading) loading.classList.add('hidden');
         if (connected) connected.classList.add('hidden');
+        if (nodeOffline) nodeOffline.classList.add('hidden');
     } else {
         if (loading) loading.classList.remove('hidden');
         if (image) image.classList.add('hidden');
