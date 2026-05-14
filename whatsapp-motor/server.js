@@ -13,6 +13,8 @@ const ATTACHMENTS_ROOT = path.resolve('./data/attachments');
 
 let isReady = false;
 let currentQR = null;
+let initAttempts = 0;
+let watchdogTimer = null;
 
 const appDataDir = path.join(process.env.LOCALAPPDATA || process.env.USERPROFILE, 'ZapManagerPro');
 if (!fs.existsSync(appDataDir)) {
@@ -42,8 +44,50 @@ const client = new Client({
     }
 });
 
+function clearSessionWatchdog() {
+    if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+    }
+}
+
+function armSessionWatchdog() {
+    clearSessionWatchdog();
+    watchdogTimer = setTimeout(() => {
+        if (!currentQR && !isReady) {
+            initAttempts += 1;
+            console.log(`[WA] Watchdog: nenhum QR/ready em 45s (tentativa ${initAttempts}/2)`);
+
+            if (initAttempts >= 2) {
+                console.error('[WA] Watchdog: sessao corrompida apos 2 tentativas. Aguardando intervencao manual.');
+                return;
+            }
+
+            const sessionPath = path.join(appDataDir, 'session');
+            try {
+                fs.rmSync(sessionPath, { recursive: true, force: true });
+            } catch (err) {
+                console.error('[WA] Watchdog: falha ao remover session:', err.message);
+            }
+
+            try {
+                client.destroy();
+            } catch (err) {
+                console.error('[WA] Watchdog: falha ao destruir client:', err.message);
+            }
+
+            setTimeout(() => {
+                client.initialize();
+                armSessionWatchdog();
+            }, 1500);
+        }
+    }, 45000);
+}
+
 // Ao gerar QR Code
 client.on('qr', async (qr) => {
+    clearSessionWatchdog();
+    initAttempts = 0;
     console.log('SCANEAR QR CODE - Acesse o console e scaneie.');
     qrcodeTerminal.generate(qr, { small: true });
 
@@ -70,6 +114,8 @@ client.on('loading_screen', (percent, message) => {
 
 // Quando o WhatsApp estiver conectado com sucesso
 client.on('ready', () => {
+    clearSessionWatchdog();
+    initAttempts = 0;
     console.log('✅ SIGMA HUB - WhatsApp Automação 100% OK e Pronto para uso!');
     isReady = true;
     currentQR = null; // Garante que limpou o QR
@@ -85,6 +131,7 @@ client.on('disconnected', (reason) => {
         console.log('[WA] Attempting to reinitialize after disconnect...');
         try {
             client.initialize();
+            armSessionWatchdog();
         } catch (err) {
             console.error('[WA] Reinitialize failed:', err.message);
         }
@@ -93,6 +140,7 @@ client.on('disconnected', (reason) => {
 
 // Inicia o cliente
 client.initialize();
+armSessionWatchdog();
 
 // ==========================================
 // ROTAS DE API (O Python vai disparar daqui)
