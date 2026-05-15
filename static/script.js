@@ -239,7 +239,11 @@ async function exportCampaign(campaignId) {
     } catch (err) {
         alert('Erro ao exportar: ' + err.message);
     } finally {
-        if (btn) { btn.textContent = '↓ Exportar Relatório'; btn.disabled = false; }
+        if (btn) {
+            btn.innerHTML = '<i data-lucide="download" size="14"></i> Exportar Relatório';
+            btn.disabled = false;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
     }
 }
 
@@ -381,7 +385,7 @@ function showImportDiscardToast(summary) {
     const errorCount = summary.error_count ?? (summary.errors || []).length;
     const parts = [];
 
-    if (summary.duplicates_detected) parts.push(`${summary.duplicates_detected} duplicada(s) sera(o) enviada(s)`);
+    if (summary.duplicates_detected) parts.push(`${summary.duplicates_detected} duplicada(s) serão enviadas`);
     if (errorCount) parts.push(`${errorCount} com erro`);
     if (summary.skipped_blacklist) parts.push(`${summary.skipped_blacklist} em blacklist`);
 
@@ -508,7 +512,7 @@ function makeEditable(cell, contactId, field) {
     input.style.cssText = `
         width: 100%; border: 1.5px solid var(--color-brand);
         border-radius: 4px; padding: 2px 6px; font-size: 13px;
-        background: var(--color-bg-surface); color: var(--color-text-primary);
+        background: var(--color-bg-input); color: var(--color-text-primary);
         outline: none;
     `;
     cell.innerHTML = '';
@@ -764,6 +768,9 @@ function toggleDelay() {
 }
 
 function toggleSendWindow() {
+    const section = document.getElementById('send-window-section');
+    if (section && section.dataset.featureDisabled === 'true') return;
+
     const panel = document.getElementById('send-window-panel');
     const icon = document.getElementById('send-window-arrow-icon');
     if (!panel) return;
@@ -772,6 +779,9 @@ function toggleSendWindow() {
 }
 
 async function loadSendWindowConfig() {
+    const section = document.getElementById('send-window-section');
+    if (section && section.dataset.featureDisabled === 'true') return;
+
     const result = await apiBg('/api/config/send-window');
     if (result && result.data) {
         renderSendWindowConfig(result.data, result.state);
@@ -821,6 +831,9 @@ function formatSendWindowDays(days) {
 }
 
 async function saveSendWindowConfig() {
+    const section = document.getElementById('send-window-section');
+    if (section && section.dataset.featureDisabled === 'true') return;
+
     try {
         const result = await api('/api/config/send-window', {
             method: 'POST',
@@ -1005,7 +1018,7 @@ function renderHistoryRows(list) {
                                color:var(--color-text-secondary);
                                font-size:12px; cursor:pointer;"
                         title="Exportar Excel">
-                        ↓ Relatório
+                        <i data-lucide="download" size="14"></i> Relatório
                     </button>
                 </div>
             </td>

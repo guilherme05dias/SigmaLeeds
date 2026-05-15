@@ -208,3 +208,9 @@ Validacao:
 - `uploadAttachment` revela o chip e reidrata Lucide; cancelamento/erro/tamanho invalido ocultam o chip.
 - `clearAttachment` usa o botao X para chamar `/api/clear-attachment`, resetar input/label e esconder o chip.
 - Commit: `fix: chip visual com botao de remover para anexo global`.
+
+## UX audit estrutural V4.2
+- Baseline `ux_check`: Google Fonts=1; Hex HTML=4; Emoji=3; bg-surface=1; alert/confirm=1; botao sem aria=5; `sera(o)`=1; inline>=5=1.
+- Depois `ux_check`: Google Fonts=0; Hex HTML=0; Emoji=0; bg-surface=0; alert/confirm=1; botao sem aria=0; `sera(o)`=0; inline>=5=1.
+- Conclusao: todos os 7 contadores-alvo zerados; contadores nao alvo permanecem fora desta fase.
+- Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.02s`.

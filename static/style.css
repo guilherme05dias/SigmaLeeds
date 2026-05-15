@@ -26,8 +26,11 @@
   
   --color-info-bg: #e2f0ff;
   --color-info-text: #1b61c9;
+  --color-monitor-bg: #1C1C1E;
+  --color-monitor-text: #ffffff;
   --color-warning-bg: #fff1cc;
   --color-warning: #7a4f00;
+  --color-warning-dark: #d46b08;
 
   --font-sans: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   --shadow-blue: rgba(45, 127, 249, 0.28) 0px 1px 3px;
@@ -926,6 +929,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
     gap: 20px;
 }
 
+/* .license-card ja possui border; item da auditoria documentado sem alterar CSS. */
 .license-card {
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
