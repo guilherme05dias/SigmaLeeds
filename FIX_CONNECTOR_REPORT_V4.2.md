@@ -170,3 +170,12 @@ Validacao:
 - `.btn-close-modal` restringe Lucide para `14x14`.
 - `.icon-9` força o `x` do botao inline de remover PDF para `9x9`, alinhado ao pai de `14px`.
 - Visual esperado: icone e texto do chip com proporcao uniforme e respiro consistente.
+
+## Remocao de contato recalcula cards
+
+- Antes: `removeContact` removia a linha do DOM, mas cards e flag `REPETIDO` ficavam stale.
+- Depois: `updateImportCards(contacts)` recalcula Total, Prontos, Invalidos, Blacklist e Duplicados pelo array local.
+- `removeContact` muta `window.importedContacts`, re-renderiza a tabela e chama `updateImportCards`.
+- Re-render da tabela recalcula `.row-duplicate`, removendo `REPETIDO` quando o phone deixa de repetir.
+- `removeContactAttachment` tambem chama `updateImportCards` por consistencia do fluxo.
+- Validacao: `python -c "import app; print('OK')"`; `node --check static/script.js`; `python -m pytest tests/ license/ -v` -> `16 passed in 2.20s`.

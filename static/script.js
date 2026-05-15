@@ -124,6 +124,7 @@ async function removeContactAttachment(contactId, btn) {
             const contact = window.importedContacts?.find(c => c.id === contactId);
             if (contact) contact.attachment_path = null;
             renderContactsTable(window.importedContacts);
+            updateImportCards(window.importedContacts);
             showToast('Anexo removido.', 'info');
         }
     } catch (err) {
@@ -495,14 +496,46 @@ async function updateContact(contactId, fields) {
     });
 }
 
+function updateImportCards(contacts) {
+    const arr = contacts || [];
+    const total = arr.length;
+    let pending = 0;
+    let invalid = 0;
+    let blacklist = 0;
+    const phoneCounts = {};
+
+    for (const c of arr) {
+        const status = (c.status || '').toUpperCase();
+        if (status === 'INVALIDO' || status === 'INVÁLIDO') invalid++;
+        else if (status === 'BLACKLIST') blacklist++;
+        else pending++;
+        if (c.phone) phoneCounts[c.phone] = (phoneCounts[c.phone] || 0) + 1;
+    }
+
+    const duplicates = Object.values(phoneCounts).reduce((sum, count) => sum + (count > 1 ? count - 1 : 0), 0);
+    const map = {
+        sumTotal: total,
+        sumReady: pending,
+        sumInvalid: invalid,
+        sumBlacklist: blacklist,
+        sumDuplicates: duplicates,
+    };
+
+    for (const [id, value] of Object.entries(map)) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    }
+}
+
 async function removeContact(contactId, btn) {
     if (!confirm("Remover este contato da lista?")) return;
     const row = btn.closest('tr');
     await api(`/api/contacts/${contactId}/remove`, { method: 'DELETE' });
     row.style.opacity = '0.3';
     setTimeout(() => {
-        row.remove();
-        window.importedContacts = window.importedContacts.filter(c => c.id !== contactId);
+        window.importedContacts = (window.importedContacts || []).filter(c => c.id !== contactId);
+        renderContactsTable(window.importedContacts);
+        updateImportCards(window.importedContacts);
         updatePreview();
     }, 300);
 }
