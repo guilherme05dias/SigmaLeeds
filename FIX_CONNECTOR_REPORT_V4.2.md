@@ -117,3 +117,17 @@ Validacao:
 - `python -m pytest tests/ license/ -v` -> `16 passed in 3.05s`.
 - `python -c "import app; print('OK')"` -> `OK`.
 - Toast novo: `Atencao: N duplicada(s), M com erro, K em blacklist ignoradas. Veja o console para detalhes.`
+
+## Import com phones repetidos por empresa
+
+| Caso | Antes | Depois |
+|---|---|---|
+| Mesmo phone na campanha | `idx_contacts_unique` bloqueava e o import descartava com `INSERT OR IGNORE` | Migration v9 remove o indice unico; todas as linhas validas entram |
+| Contagem de duplicados | `duplicates_skipped` indicava descarte | `duplicates_detected` e informativo; mensagens duplicadas serao enviadas |
+| UI | Card amarelo/toast de descarte | Card azul/info, toast de importacao e linhas `.row-duplicate` na tabela |
+
+Validacao:
+- `python -m pytest tests/ license/ -v` -> `16 passed in 2.70s`.
+- `python -c "import app; print('OK')"` -> `OK`.
+
+**ATENCAO:** enviar varias mensagens em sequencia para o mesmo numero aumenta risco de bloqueio pelo WhatsApp; o operador deve avaliar a lista antes de iniciar.

@@ -99,7 +99,9 @@ MIGRATIONS = [
         last_connected TEXT
     )""",
     # v8
-    """ALTER TABLE templates ADD COLUMN variables TEXT DEFAULT '[]'"""
+    """ALTER TABLE templates ADD COLUMN variables TEXT DEFAULT '[]'""",
+    # v9 — Permite numeros duplicados (mesma campanha, mesmo phone, empresas diferentes)
+    """DROP INDEX IF EXISTS idx_contacts_unique"""
 ]
 
 def get_connection():

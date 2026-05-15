@@ -135,6 +135,7 @@ function showToast(message, type = 'info') {
     const colors = {
         success: { bg: 'var(--color-success-bg)', border: 'var(--color-success-text)', text: 'var(--color-success-text)' },
         info:    { bg: 'var(--color-brand-light)', border: 'var(--color-brand)', text: 'var(--color-brand)' },
+        warning: { bg: 'var(--color-warning-bg)', border: 'var(--color-warning)', text: 'var(--color-warning)' },
         error:   { bg: 'var(--color-danger-bg)', border: 'var(--color-danger-text)', text: 'var(--color-danger-text)' },
     };
     const c = colors[type] || colors.info;
@@ -276,20 +277,24 @@ function renderSummaryCards(summary) {
     if (sumReady) sumReady.textContent = summary.imported || 0;
     if (sumInvalid) sumInvalid.textContent = errorCount;
     if (sumBlacklist) sumBlacklist.textContent = summary.skipped_blacklist || 0;
-    if (sumDuplicates) sumDuplicates.textContent = summary.duplicates_skipped || 0;
+    if (sumDuplicates) sumDuplicates.textContent = summary.duplicates_detected || 0;
 }
 
 function showImportDiscardToast(summary) {
     const errorCount = summary.error_count ?? (summary.errors || []).length;
     const parts = [];
 
-    if (summary.duplicates_skipped) parts.push(`${summary.duplicates_skipped} duplicada(s)`);
+    if (summary.duplicates_detected) parts.push(`${summary.duplicates_detected} duplicada(s) sera(o) enviada(s)`);
     if (errorCount) parts.push(`${errorCount} com erro`);
     if (summary.skipped_blacklist) parts.push(`${summary.skipped_blacklist} em blacklist`);
 
     if (parts.length) {
-        showToast(`Atencao: ${parts.join(', ')} ignoradas. Veja o console para detalhes.`, 'info');
+        const level = errorCount ? 'warning' : 'info';
+        showToast(`Importacao: ${parts.join(', ')}.`, level);
         if (summary.errors && summary.errors.length) console.warn('Linhas com erro:', summary.errors);
+    }
+    if (summary.duplicate_phones && summary.duplicate_phones.length) {
+        console.info('Numeros duplicados na lista:', summary.duplicate_phones);
     }
 }
 
@@ -314,22 +319,34 @@ function renderVariableChips(contacts) {
 function renderContactsTable(contacts) {
     const body = document.getElementById('contactsBody');
     if (!body) return;
+
+    const phoneCounts = contacts.reduce((counts, contact) => {
+        if (contact.phone) counts.set(contact.phone, (counts.get(contact.phone) || 0) + 1);
+        return counts;
+    }, new Map());
+    const duplicatePhones = new Set([...phoneCounts].filter(([, count]) => count > 1).map(([phone]) => phone));
     
     body.innerHTML = contacts.map((c, i) => {
         const isInvalid = c.status === 'INVÁLIDO' || !c.phone;
         const isBlacklist = c.status === 'BLACKLIST';
-        const rowClass = isInvalid ? 'invalid' : isBlacklist ? 'blacklisted' : '';
+        const isDuplicate = c.phone && duplicatePhones.has(c.phone);
+        const rowClasses = [];
+        if (isInvalid) rowClasses.push('invalid');
+        if (isBlacklist) rowClasses.push('blacklisted');
+        if (isDuplicate) rowClasses.push('row-duplicate');
+        const phoneValue = escapeHtml(c.phone) || '<span style="color:var(--color-danger-text)">Inválido</span>';
+        const phoneClass = isDuplicate ? 'editable-phone phone duplicate-phone' : 'editable-phone phone';
         
         return `
-        <tr class="${rowClass}" data-id="${c.id}">
+        <tr class="${rowClasses.join(' ')}" data-id="${c.id}">
             <td style="width:32px;padding:8px;color:var(--color-text-tertiary);font-size:12px">${i + 1}</td>
             <td class="editable-name" onclick="makeEditable(this, ${c.id}, 'name')"
                 style="cursor:pointer" title="Clique para editar">
                 ${escapeHtml(c.name || '—')}
             </td>
-            <td class="editable-phone phone" onclick="makeEditable(this, ${c.id}, 'phone')"
+            <td class="${phoneClass}" onclick="makeEditable(this, ${c.id}, 'phone')"
                 style="cursor:pointer" title="Clique para editar">
-                ${escapeHtml(c.phone) || '<span style="color:var(--color-danger-text)">Inválido</span>'}
+                ${phoneValue}
             </td>
             <td style="color:var(--color-text-secondary)">${escapeHtml(c.company || '—')}</td>
             <td>${getStatusBadge(c.status)}</td>

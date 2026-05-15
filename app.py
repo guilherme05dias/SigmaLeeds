@@ -713,7 +713,8 @@ async def import_contacts(file: UploadFile = File(...)):
                 "total": res["total"],
                 "imported": res["imported"],
                 "skipped_blacklist": res["skipped_blacklist"],
-                "duplicates_skipped": res["duplicates_skipped"],
+                "duplicates_detected": res["duplicates_detected"],
+                "duplicate_phones": res.get("duplicate_phones", []),
                 "errors": res["errors"][:50],
                 "error_count": len(res["errors"])
             },

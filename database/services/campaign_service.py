@@ -4,6 +4,7 @@ import os
 import openpyxl
 import logging
 import unicodedata
+from collections import Counter
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from database.schema import get_connection
 from database.services.blacklist_service import is_blacklisted
@@ -107,7 +108,7 @@ def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
     PHONE_KEYS = {'numero', 'whatsapp', 'telefone', 'celular'}
     NAME_KEYS = {'nome', 'cliente', 'contato'}
     COMPANY_KEYS = {'empresa', 'razao_social', 'razao social'}
-    results = {"total": 0, "imported": 0, "skipped_blacklist": 0, "duplicates_skipped": 0, "errors": []}
+    results = {"total": 0, "imported": 0, "skipped_blacklist": 0, "duplicates_detected": 0, "duplicate_phones": [], "errors": []}
     try:
         wb = openpyxl.load_workbook(xlsx_path, data_only=True)
         sheet = wb.active
@@ -152,19 +153,24 @@ def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
                 if is_blacklisted(phone):
                     results["skipped_blacklist"] += 1
                     conn.execute("""
-                        INSERT OR IGNORE INTO campaign_contacts
+                        INSERT INTO campaign_contacts
                         (campaign_id, name, phone, company, extra_fields, status)
                         VALUES (?, ?, ?, ?, ?, 'BLACKLIST')
                     """, (campaign_id, name, phone, company, extras_json))
                     continue
                 rows_to_insert.append((campaign_id, name, phone, company, extras_json))
 
+            phone_counts = Counter(row[2] for row in rows_to_insert)
+            results["duplicates_detected"] = sum(count - 1 for count in phone_counts.values() if count > 1)
+            results["duplicate_phones"] = [phone for phone, count in phone_counts.items() if count > 1]
+
             with conn:
                 cursor = conn.cursor()
-                cursor.executemany("INSERT OR IGNORE INTO campaign_contacts (campaign_id, name, phone, company, extra_fields) VALUES (?, ?, ?, ?, ?)", rows_to_insert)
-                inserted = cursor.rowcount
-                results["imported"] = inserted
-                results["duplicates_skipped"] = max(0, len(rows_to_insert) - inserted)
+                cursor.executemany(
+                    "INSERT INTO campaign_contacts (campaign_id, name, phone, company, extra_fields) VALUES (?, ?, ?, ?, ?)",
+                    rows_to_insert,
+                )
+                results["imported"] = cursor.rowcount
         finally:
             conn.close()
     except Exception:

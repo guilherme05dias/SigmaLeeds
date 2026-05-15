@@ -130,14 +130,14 @@ def test_import_normalizes_header_accents():
 
     assert res['imported'] == 1
 
-def test_campaign_counts_duplicates():
-    c_id = create_campaign('Dup Test', 'Ola {nome}')
+def test_campaign_allows_duplicates():
+    c_id = create_campaign('Dup Test', 'Ola {nome} - {empresa}')
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.append(["Nome", "Numero"])
-    ws.append(["Joao", "11999998888"])
-    ws.append(["Maria", "11999998888"])
-    ws.append(["Ana", "21988887777"])
+    ws.append(["Nome", "Numero", "Empresa"])
+    ws.append(["Joao", "11999998888", "Empresa A"])
+    ws.append(["Maria", "11999998888", "Empresa B"])
+    ws.append(["Ana", "21988887777", "Empresa C"])
     path = "test_dup.xlsx"
     wb.save(path)
     try:
@@ -147,5 +147,6 @@ def test_campaign_counts_duplicates():
             os.remove(path)
 
     assert res['total'] == 3
-    assert res['imported'] == 2
-    assert res['duplicates_skipped'] == 1
+    assert res['imported'] == 3
+    assert res['duplicates_detected'] == 1
+    assert '5511999998888' in res['duplicate_phones']

@@ -232,8 +232,8 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 .summary-card.invalid  .label, .summary-card.invalid .value { color: var(--color-danger-text); }
 .summary-card.blacklist{ background: var(--color-bg-tertiary); }
 .summary-card.blacklist .label, .summary-card.blacklist .value { color: var(--color-text-secondary); }
-.summary-card.duplicates { background: var(--color-warning-bg); }
-.summary-card.duplicates .label, .summary-card.duplicates .value { color: var(--color-warning); }
+.summary-card.duplicates { background: var(--color-info-bg); }
+.summary-card.duplicates .label, .summary-card.duplicates .value { color: var(--color-info-text); }
 
 /* Table */
 .contacts-table-wrap {
@@ -275,6 +275,20 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 .contacts-table tr.invalid td { background: var(--color-danger-bg); }
 .contacts-table tr.invalid td.phone { color: var(--color-danger-text); font-weight: 500; }
 .contacts-table tr.blacklisted td { background: var(--color-bg-tertiary); color: var(--color-text-secondary); text-decoration: line-through; opacity: 0.7; }
+.contacts-table tr.row-duplicate td { background: var(--color-info-bg); }
+.duplicate-phone::after {
+    content: "repetido";
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--color-bg-primary);
+    color: var(--color-info-text);
+    border: 0.5px solid var(--color-brand-muted);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
 
 .inline-edit-input:focus {
     outline: none;
