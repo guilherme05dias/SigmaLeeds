@@ -195,3 +195,9 @@ Validacao:
 | nenhum / so global / so por linha | texto; texto+global; texto+por linha |
 | ambos | 2 msgs: texto+por linha, depois global sem legenda; falha global secundaria fica WARN |
 | Commit | `fix: anexo global e anexo por linha enviam os dois` |
+
+## Upload de anexo global
+- Diagnostico: `templates/index.html` chamava `uploadAttachment(this)`, mas a funcao nao existia em `static/script.js`.
+- Fix: `uploadAttachment` valida 16 MB, envia `FormData` para `/api/upload-attachment`, atualiza `#attFileName` e mostra toast success.
+- Bonus: `clearAttachment` chama `/api/clear-attachment` e reseta input/label para uso futuro.
+- Commit: `fix: implementa uploadAttachment para anexo global`.

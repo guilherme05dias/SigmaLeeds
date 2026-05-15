@@ -83,6 +83,58 @@ function getFilename(path) {
     return path.split(/[\\/]/).pop();
 }
 
+async function uploadAttachment(input) {
+    const file = input.files && input.files[0];
+    const label = document.getElementById('attFileName');
+    if (!file) {
+        if (label) label.textContent = 'Nenhum arquivo';
+        return;
+    }
+
+    // Limite simples: 16 MB (limite do WhatsApp para midia)
+    if (file.size > 16 * 1024 * 1024) {
+        alert('Arquivo maior que 16 MB. O WhatsApp não aceita mídias acima desse limite.');
+        input.value = '';
+        if (label) label.textContent = 'Nenhum arquivo';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const data = await api('/api/upload-attachment', {
+            method: 'POST',
+            body: formData,
+        });
+        if (data.success) {
+            if (label) label.textContent = file.name;
+            showToast(`Anexo "${file.name}" carregado. Sera enviado em todas as mensagens.`, 'success');
+        } else {
+            alert('Erro ao anexar arquivo: ' + (data.error || 'desconhecido'));
+            input.value = '';
+            if (label) label.textContent = 'Nenhum arquivo';
+        }
+    } catch (err) {
+        alert('Erro ao enviar arquivo: ' + err.message);
+        input.value = '';
+        if (label) label.textContent = 'Nenhum arquivo';
+    }
+}
+
+async function clearAttachment() {
+    const label = document.getElementById('attFileName');
+    const fileInput = document.getElementById('fileAtt');
+    try {
+        await api('/api/clear-attachment', { method: 'POST' });
+    } catch (err) {
+        // Nao bloqueia o reset visual.
+    }
+    if (fileInput) fileInput.value = '';
+    if (label) label.textContent = 'Nenhum arquivo';
+    showToast('Anexo global removido.', 'info');
+}
+
 async function uploadContactAttachment(contactId, input) {
     const file = input.files[0];
     if (!file) return;
