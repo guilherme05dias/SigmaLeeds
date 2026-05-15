@@ -129,14 +129,14 @@
                             <h3>2. Mensagem</h3>
                             <textarea id="message-input" class="message-textarea" placeholder="Olá {nome}, a {empresa} tem uma novidade pra você..."></textarea>
                             <div class="chips-toolbar">
-                              <button type="button" class="var-chip" onclick="insertVar('{nome}')">👤 nome</button>
-                              <button type="button" class="var-chip" onclick="insertVar('{empresa}')">🏢 empresa</button>
-                              <button type="button" class="var-chip" onclick="insertVar('{adicional1}')">＋ adicional1</button>
-                              <button type="button" class="var-chip" onclick="insertVar('{adicional2}')">＋ adicional2</button>
-                              <button type="button" class="var-chip" onclick="insertVar('{adicional3}')">＋ adicional3</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{nome}')"><i data-lucide="user" size="14"></i> nome</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{empresa}')"><i data-lucide="building-2" size="14"></i> empresa</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{adicional1}')"><i data-lucide="plus" size="14"></i> adicional1</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{adicional2}')"><i data-lucide="plus" size="14"></i> adicional2</button>
+                              <button type="button" class="var-chip" onclick="insertVar('{adicional3}')"><i data-lucide="plus" size="14"></i> adicional3</button>
                               <button type="button" id="btn-spintax" class="var-chip chip-spintax"
                                 onclick="openSpintaxModal()" title="Inserir variação de texto aleatória">
-                                🔀 Variação
+                                <i data-lucide="shuffle" size="14"></i> Variação
                               </button>
                             </div>
                             
@@ -521,7 +521,7 @@
                     <h3 id="details-campaign-name">Detalhes da Campanha</h3>
                     <p id="details-campaign-date" style="font-size: 12px; color: var(--color-text-secondary);"></p>
                 </div>
-                <button class="btn-close-modal" onclick="closeHistoryDetails()">✕</button>
+                <button class="btn-close-modal" onclick="closeHistoryDetails()" aria-label="Fechar"><i data-lucide="x" size="14"></i></button>
             </div>
 
             <!-- Stats Grid -->
@@ -587,7 +587,7 @@
         </button>
 
         <div id="spintax-warning" style="display:none" class="spintax-warning">
-          ⚠️ Muitas variações podem dificultar o preview.
+          <i data-lucide="alert-triangle" size="14"></i> Muitas variações podem dificultar o preview.
         </div>
 
         <div class="spintax-preview-box">

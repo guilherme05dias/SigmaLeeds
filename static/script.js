@@ -396,7 +396,7 @@ function renderContactsTable(contacts) {
                         <input type="file" accept=".pdf"
                             style="display:none"
                             onchange="uploadContactAttachment(${c.id}, this)">
-                        <span style="font-size:14px">📎</span>
+                        <i data-lucide="paperclip" size="14"></i>
                     </label>
                     ${c.attachment_path ? `
                     <button onclick="removeContactAttachment(${c.id}, this)"
@@ -406,7 +406,7 @@ function renderContactsTable(contacts) {
                                background:var(--color-danger); color:white;
                                border:none; cursor:pointer; font-size:9px;
                                display:flex; align-items:center; justify-content:center;
-                               line-height:1; padding:0;">✕</button>
+                               line-height:1; padding:0;" aria-label="Remover PDF"><i data-lucide="x" size="9"></i></button>
                     ` : ''}
                 </div>
             </td>
@@ -415,7 +415,7 @@ function renderContactsTable(contacts) {
                     style="background:none;border:none;cursor:pointer;
                            color:var(--color-text-tertiary);font-size:14px;
                            padding:2px 6px;border-radius:4px"
-                    title="Remover contato">✕</button>
+                    title="Remover contato"><i data-lucide="x" size="14"></i></button>
             </td>
         </tr>`;
     }).join('');
@@ -1427,12 +1427,13 @@ function addSpintaxOption() {
     <span class="option-number">${count + 1}.</span>
     <input type="text" class="spintax-input" placeholder="Opção ${count + 1}"
       oninput="updateSpintaxPreview()" />
-    ${count >= 2 ? '<button type="button" class="btn-remove-option" onclick="removeSpintaxOption(this)">✕</button>' : ''}
+    ${count >= 2 ? '<button type="button" class="btn-remove-option" onclick="removeSpintaxOption(this)" aria-label="Remover opção"><i data-lucide="x" size="14"></i></button>' : ''}
   `;
   list.appendChild(row);
   const warning = document.getElementById('spintax-warning');
   warning.style.display = count + 1 > 6 ? 'block' : 'none';
   updateSpintaxPreview();
+  lucide.createIcons();
 }
 
 function removeSpintaxOption(btn) {

@@ -145,3 +145,19 @@ Linhas alteradas:
 
 Validacao:
 - `python -m pytest tests/ license/ -v` -> `16 passed in 2.51s`.
+
+## UX: emojis substituidos por Lucide
+
+| Arquivo:linha | Antes | Depois |
+|---|---|---|
+| `templates/index.html:132-136` | `nome/empresa/adicional` com emojis | `user`, `building-2`, `plus` |
+| `templates/index.html:139` | emoji de variacao | `shuffle` + `Variacao` |
+| `templates/index.html:524` | simbolo de fechar historico | `x` com `aria-label=Fechar` |
+| `templates/index.html:590` | emoji de alerta spintax | `alert-triangle` |
+| `static/script.js:399` | emoji de anexo PDF | `paperclip` |
+| `static/script.js:409/418` | simbolo de remover PDF/contato | `x` |
+| `static/script.js:1430-1436` | simbolo de remover opcao | `x` + `lucide.createIcons()` |
+
+Validacao:
+- `rg -n "<emoji-list>" templates/index.html static/script.js static/style.css` -> sem resultados.
+- `python -m pytest tests/ license/ -v` -> `16 passed in 2.23s`.
