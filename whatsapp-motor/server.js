@@ -8,8 +8,13 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
-// C3: only serve attachments that live inside data/attachments
-const ATTACHMENTS_ROOT = path.resolve('./data/attachments');
+// C3: only serve attachments that live inside the configured attachments root.
+// Em runtime (dev ou empacotado), o Python passa ZAP_ATTACHMENTS_ROOT apontando para
+// a pasta data/attachments do projeto. Se não vier, fallback sobe um nível
+// (whatsapp-motor/ -> raiz do projeto) e usa data/attachments lá.
+const ATTACHMENTS_ROOT = process.env.ZAP_ATTACHMENTS_ROOT
+    ? path.resolve(process.env.ZAP_ATTACHMENTS_ROOT)
+    : path.resolve(__dirname, '..', 'data', 'attachments');
 
 let isReady = false;
 let currentQR = null;

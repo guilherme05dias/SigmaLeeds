@@ -179,3 +179,12 @@ Validacao:
 - Re-render da tabela recalcula `.row-duplicate`, removendo `REPETIDO` quando o phone deixa de repetir.
 - `removeContactAttachment` tambem chama `updateImportCards` por consistencia do fluxo.
 - Validacao: `python -c "import app; print('OK')"`; `node --check static/script.js`; `python -m pytest tests/ license/ -v` -> `16 passed in 2.20s`.
+
+## Node attachments root via env
+
+- Diagnostico: `ATTACHMENTS_ROOT` usava `path.resolve('./data/attachments')` com CWD `whatsapp-motor/`, apontando para pasta errada.
+- Fix Node: `server.js` le `ZAP_ATTACHMENTS_ROOT`; fallback usa `__dirname/../data/attachments`.
+- Fix Python: `_spawn_node_with_job` passa `ZAP_ATTACHMENTS_ROOT=str(UPLOAD_ROOT)` no `subprocess.Popen`.
+- Guard preservado: validacao `startsWith(ATTACHMENTS_ROOT + path.sep)` continua intacta.
+- Boot programatico: `node_ping: 200 {"ok":true}`.
+- Validacao: `node --check whatsapp-motor/server.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.42s`.

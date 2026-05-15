@@ -115,12 +115,15 @@ def _spawn_node_with_job(node_script_path: str):
     """
     node_dir = os.path.dirname(os.path.abspath(node_script_path))
     node_exe = os.environ.get("ZAP_NODE_EXE") or "node"
+    env = os.environ.copy()
+    env["ZAP_ATTACHMENTS_ROOT"] = str(UPLOAD_ROOT)
 
     CREATE_NO_WINDOW = 0x08000000
 
     proc = subprocess.Popen(
         [node_exe, "server.js"],
         cwd=node_dir,
+        env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         creationflags=CREATE_NO_WINDOW,
