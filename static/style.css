@@ -93,6 +93,7 @@ body {
   overflow: hidden; 
   font-size: 16px;
   letter-spacing: 0.18px;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .app-container { 
@@ -401,7 +402,42 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
 .contacts-table tr.invalid td { background: var(--color-danger-bg); }
 .contacts-table tr.invalid td.phone { color: var(--color-danger-text); font-weight: 500; }
 .contacts-table tr.blacklisted td { background: var(--color-bg-tertiary); color: var(--color-text-secondary); text-decoration: line-through; opacity: 0.7; }
-.contacts-table tr.row-duplicate td { background: var(--color-info-bg); }
+.contacts-table tr.row-duplicate td {
+    background: var(--color-info-bg);
+}
+
+.contacts-table tr.row-duplicate td:first-child {
+    box-shadow: inset 3px 0 0 var(--color-info-text);
+}
+
+.badge-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.badge-status--pending {
+    background: var(--color-warning-bg);
+    color: var(--color-warning-dark);
+}
+
+.badge-status--success {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+}
+
+.badge-status--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+}
+
+.badge-status--muted {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-tertiary);
+}
 .duplicate-phone::after {
     content: "repetido";
     display: inline-block;

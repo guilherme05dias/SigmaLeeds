@@ -231,3 +231,10 @@ Validacao:
 - Dark toggle: sidebar usa moon/sun, persiste `zap-theme` em localStorage e sincroniza label no load.
 - Revisar visualmente em dark: toast colors, status badges, modal overlays, WhatsApp preview, onboarding wizard, license page.
 - Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 4.40s`.
+
+## Polimento dark mode
+- Badges: PENDENTE `#FFF7E6/#D46B08` -> `--color-warning-bg/--color-warning-dark`; ENVIADO `#F6FFED/#389E0D` -> success tokens.
+- Badges: ERRO/INVALIDO `#FFF1F0/#CF1322` -> danger tokens; BLACKLIST `#F5F5F5/#8C8C8C` -> bg-tertiary/text-tertiary.
+- `body` ganhou transicao 180ms para background/color na troca light/dark.
+- Linha duplicada mantem fundo info e ganha barra lateral azul `box-shadow: inset 3px 0 0 var(--color-info-text)`.
+- Validacao: `ux_check` sem regressao (alert/confirm=23); `node --check`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.21s`.

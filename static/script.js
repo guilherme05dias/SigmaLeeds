@@ -520,15 +520,14 @@ function renderContactsTable(contacts) {
 
 function getStatusBadge(status) {
     const map = {
-        'PENDENTE':  ['#FFF7E6', '#D46B08', 'Pendente'],
-        'ENVIADO':   ['#F6FFED', '#389E0D', 'Enviado'],
-        'ERRO':      ['#FFF1F0', '#CF1322', 'Erro'],
-        'INVÁLIDO':  ['#FFF1F0', '#CF1322', 'Inválido'],
-        'BLACKLIST': ['#F5F5F5', '#8C8C8C', 'Blacklist'],
+        'PENDENTE':  ['badge-status badge-status--pending', 'Pendente'],
+        'ENVIADO':   ['badge-status badge-status--success', 'Enviado'],
+        'ERRO':      ['badge-status badge-status--danger', 'Erro'],
+        'INVÁLIDO':  ['badge-status badge-status--danger', 'Inválido'],
+        'BLACKLIST': ['badge-status badge-status--muted', 'Blacklist'],
     };
-    const [bg, color, label] = map[status] || map['PENDENTE'];
-    return `<span style="background:${bg};color:${color};padding:2px 8px;
-                border-radius:20px;font-size:11px;font-weight:500;display:inline-block">${label}</span>`;
+    const [cls, label] = map[status] || map['PENDENTE'];
+    return `<span class="${cls}">${label}</span>`;
 }
 
 function makeEditable(cell, contactId, field) {
