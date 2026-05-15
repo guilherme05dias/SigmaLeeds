@@ -26,28 +26,66 @@ if (!fs.existsSync(appDataDir)) {
     fs.mkdirSync(appDataDir, { recursive: true });
 }
 
-// Procura pelo Chrome ou Edge instalado na máquina do usuário
+// Procura Chrome ou Edge em locais comuns do Windows. Retorna null se nada for encontrado.
 function getChromePath() {
-    const paths = [
+    const candidates = [
+        // Edge (vem com Windows 10/11)
+        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+        // Chrome (instalação típica)
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+        // Chrome instalado por usuário (sem admin)
+        path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+        // Edge Dev/Beta/Canary (fallback raro)
+        'C:\\Program Files (x86)\\Microsoft\\Edge Beta\\Application\\msedge.exe',
+        'C:\\Program Files (x86)\\Microsoft\\Edge Dev\\Application\\msedge.exe',
     ];
-    for (let p of paths) {
-        if (fs.existsSync(p)) return p;
+
+    for (const p of candidates) {
+        if (p && fs.existsSync(p)) {
+            console.log(`[Browser] Encontrado: ${p}`);
+            return p;
+        }
     }
-    return null; // Tenta o padrão do puppeteer se não achar
+
+    console.error('[Browser] ERRO: Nenhum browser (Edge/Chrome) encontrado nos paths esperados.');
+    console.error('[Browser] Verifique se Microsoft Edge ou Google Chrome estao instalados.');
+    return null;
+}
+
+// Retorna informações sobre o browser detectado (usado pelo /api/diagnostics)
+function detectBrowser() {
+    const p = getChromePath();
+    if (!p) return { found: false, path: null, name: null };
+    let name = 'desconhecido';
+    if (p.toLowerCase().includes('msedge')) name = 'Microsoft Edge';
+    else if (p.toLowerCase().includes('chrome')) name = 'Google Chrome';
+    return { found: true, path: p, name };
 }
 
 // Cliente WhatsApp invisível, armazenando os arquivos de sessão na pasta local (.wwebjs_auth)
+const _browserPath = getChromePath();
 const client = new Client({
     authStrategy: new LocalAuth({ dataPath: appDataDir }),
     puppeteer: {
         headless: true,
-        executablePath: getChromePath(),
+        executablePath: _browserPath,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
     }
 });
+
+// Log explícito se nenhum browser foi achado — ajuda diagnóstico
+if (!_browserPath) {
+    console.error('[WA] FATAL: Sem browser para o Puppeteer lançar. WhatsApp não vai conectar.');
+}
+
+function logBrowserLaunchError(err) {
+    const msg = err && err.message ? err.message : String(err || '');
+    if (/failed to launch|browser executable|could not find|executable/i.test(msg)) {
+        console.error(`[Browser] ERRO launch Puppeteer: ${msg}`);
+    }
+}
 
 function clearSessionWatchdog() {
     if (watchdogTimer) {
@@ -82,7 +120,10 @@ function armSessionWatchdog() {
             }
 
             setTimeout(() => {
-                client.initialize();
+                client.initialize().catch((err) => {
+                    logBrowserLaunchError(err);
+                    console.error('[WA] Watchdog reinitialize failed:', err.message);
+                });
                 armSessionWatchdog();
             }, 1500);
         }
@@ -128,23 +169,29 @@ client.on('ready', () => {
 
 // Quando perder conexão
 client.on('disconnected', (reason) => {
+    logBrowserLaunchError(reason);
     console.log('[WA] Disconnected:', reason);
     isReady = false;
 
     // Attempt automatic reconnect after 5 seconds
     setTimeout(() => {
         console.log('[WA] Attempting to reinitialize after disconnect...');
-        try {
-            client.initialize();
-            armSessionWatchdog();
-        } catch (err) {
-            console.error('[WA] Reinitialize failed:', err.message);
-        }
+        client.initialize()
+            .then(() => {
+                armSessionWatchdog();
+            })
+            .catch((err) => {
+                logBrowserLaunchError(err);
+                console.error('[WA] Reinitialize failed:', err.message);
+            });
     }, 5000);
 });
 
 // Inicia o cliente
-client.initialize();
+client.initialize().catch((err) => {
+    logBrowserLaunchError(err);
+    console.error('[WA] initialize failed:', err.message);
+});
 armSessionWatchdog();
 
 // ==========================================
@@ -157,6 +204,29 @@ app.get('/status', (req, res) => {
         connected: isReady,
         status: isReady ? 'connected' : 'disconnected',
         qr: currentQR
+    });
+});
+
+app.get('/diagnostics', (req, res) => {
+    res.json({
+        node_version: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        cwd: process.cwd(),
+        attachments_root: ATTACHMENTS_ROOT,
+        attachments_root_writable: (() => {
+            try {
+                fs.accessSync(ATTACHMENTS_ROOT, fs.constants.W_OK);
+                return true;
+            } catch {
+                return false;
+            }
+        })(),
+        app_data_dir: appDataDir,
+        is_ready: isReady,
+        has_qr: !!currentQR,
+        init_attempts: initAttempts,
+        browser: detectBrowser(),
     });
 });
 
@@ -206,7 +276,10 @@ app.post('/reset-session', async (req, res) => {
 
         initAttempts = 0;
         setTimeout(() => {
-            client.initialize();
+            client.initialize().catch((err) => {
+                logBrowserLaunchError(err);
+                console.error('[WA] reset-session initialize failed:', err.message);
+            });
             armSessionWatchdog();
         }, 1000);
 

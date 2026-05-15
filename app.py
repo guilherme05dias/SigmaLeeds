@@ -203,7 +203,7 @@ def _spawn_node_with_job(node_script_path: str):
     return proc
 
 def _should_forward_node_log(line: str) -> bool:
-    prefixes = ("[WA]", "[Watchdog]", "Falha", "Error", "SCANEAR QR", "Autenticado")
+    prefixes = ("[WA]", "[Browser]", "[Watchdog]", "Falha", "Error", "SCANEAR QR", "Autenticado")
     return line.startswith(prefixes)
 
 def _forward_node_logs(proc: subprocess.Popen) -> None:
@@ -213,7 +213,7 @@ def _forward_node_logs(proc: subprocess.Popen) -> None:
         line = raw_line.strip()
         if not line or not _should_forward_node_log(line):
             continue
-        level = "ERROR" if line.startswith(("Error", "Falha")) or " error:" in line.lower() else "INFO"
+        level = "ERROR" if line.startswith(("[Browser] ERRO", "Error", "Falha")) or " error:" in line.lower() else "INFO"
         publish_log_threadsafe(f"[NODE] {line}", level)
 
 _node_health_failures = 0
@@ -918,6 +918,35 @@ async def get_connector_status():
                 "node_online": False,
             }
         }
+
+@app.get("/api/diagnostics")
+async def diagnostics():
+    """Reúne diagnóstico do sistema: Python, Node motor, browser, paths."""
+    import platform
+
+    py_info = {
+        "python_version": sys.version.split()[0],
+        "platform": platform.platform(),
+        "frozen": getattr(sys, "frozen", False),
+        "executable": sys.executable,
+        "cwd": os.getcwd(),
+        "upload_root": str(UPLOAD_ROOT),
+        "upload_root_writable": os.access(str(UPLOAD_ROOT), os.W_OK),
+    }
+    node_info = {"reachable": False}
+    try:
+        node_resp = http_requests.get("http://127.0.0.1:3001/diagnostics", timeout=3).json()
+        node_info = {"reachable": True, **node_resp}
+    except Exception as e:
+        node_info["error"] = str(e)
+    return {
+        "success": True,
+        "data": {
+            "python": py_info,
+            "node": node_info,
+            "timestamp": int(time.time()),
+        },
+    }
 
 @app.get("/api/onboarding/status")
 async def onboarding_status():
