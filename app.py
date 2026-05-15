@@ -492,22 +492,34 @@ def _run_automation():
 
             msg_cur = render_template(params['msg'], contact)
 
-            # Prioridade: anexo individual > anexo global > sem anexo
-            # Sempre buscar o anexo individual do banco — nunca confiar no cache em memória
+            # Anexo por contato e/ou anexo global. Quando ambos existem, mandamos 2 mensagens:
+            # primeiro o per-line com o texto como legenda (personalizado), depois o global sem
+            # legenda (promocional/generico).
             from database.services.campaign_service import get_contact_attachment
             contact_att = get_contact_attachment(contact['id'])
             global_att = params.get('attachment', '')
-            att = None
-            if contact_att and os.path.exists(contact_att):
-                att = contact_att
-            elif global_att and os.path.exists(global_att):
-                att = global_att
+
+            has_contact = bool(contact_att) and os.path.exists(contact_att)
+            has_global = bool(global_att) and os.path.exists(global_att)
 
             publish_log_threadsafe(f"[C-{row_id}] Enviando para {nome} ({num[-4:]}...)...", "INFO")
 
             try:
-                if att:
-                    res = engine.send_with_attachment(num, msg_cur, att)
+                if has_contact and has_global:
+                    # Per-line com legenda (texto), depois global sem legenda.
+                    res = engine.send_with_attachment(num, msg_cur, contact_att)
+                    if res == "SUCESSO":
+                        res2 = engine.send_with_attachment(num, "", global_att)
+                        if res2 != "SUCESSO":
+                            publish_log_threadsafe(
+                                f"[C-{row_id}] {nome}: anexo principal enviado, mas anexo global falhou ({res2}).",
+                                "WARN"
+                            )
+                    # Se o primeiro falhar, deixa cair na logica abaixo (status ERRO).
+                elif has_contact:
+                    res = engine.send_with_attachment(num, msg_cur, contact_att)
+                elif has_global:
+                    res = engine.send_with_attachment(num, msg_cur, global_att)
                 else:
                     res = engine.send_message(num, msg_cur)
             except Exception as e:

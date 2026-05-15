@@ -188,3 +188,10 @@ Validacao:
 - Guard preservado: validacao `startsWith(ATTACHMENTS_ROOT + path.sep)` continua intacta.
 - Boot programatico: `node_ping: 200 {"ok":true}`.
 - Validacao: `node --check whatsapp-motor/server.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.42s`.
+
+## Anexos global + por linha
+| Entrada | Comportamento novo |
+|---|---|
+| nenhum / so global / so por linha | texto; texto+global; texto+por linha |
+| ambos | 2 msgs: texto+por linha, depois global sem legenda; falha global secundaria fica WARN |
+| Commit | `fix: anexo global e anexo por linha enviam os dois` |
