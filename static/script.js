@@ -509,12 +509,6 @@ function makeEditable(cell, contactId, field) {
     const input = document.createElement('input');
     input.value = (original === '—' || original === 'Inválido') ? '' : original;
     input.className = "inline-edit-input";
-    input.style.cssText = `
-        width: 100%; border: 1.5px solid var(--color-brand);
-        border-radius: 4px; padding: 2px 6px; font-size: 13px;
-        background: var(--color-bg-input); color: var(--color-text-primary);
-        outline: none;
-    `;
     cell.innerHTML = '';
     cell.appendChild(input);
     input.focus();

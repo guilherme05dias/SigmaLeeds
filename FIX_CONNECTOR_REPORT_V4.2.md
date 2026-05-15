@@ -214,3 +214,10 @@ Validacao:
 - Depois `ux_check`: Google Fonts=0; Hex HTML=0; Emoji=0; bg-surface=0; alert/confirm=1; botao sem aria=0; `sera(o)`=0; inline>=5=1.
 - Conclusao: todos os 7 contadores-alvo zerados; contadores nao alvo permanecem fora desta fase.
 - Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.02s`.
+
+## Refactor inline styles pesados
+- Antes `ux_check`: inline>=5=1; Google Fonts=0; Hex HTML=0; Emoji=0; bg-surface=0; botao sem aria=0; `sera(o)`=0.
+- Depois `ux_check`: inline>=5=0; demais contadores-alvo seguem 0; alert/confirm permanece 1.
+- Filtros Historico, Monitor, edicao inline e remanescentes pesados migraram para classes CSS.
+- `scripts/ux_check.sh`: contador inline corrigido para contar matches reais, nao a linha `0` do `grep -c`.
+- Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 4.97s`.

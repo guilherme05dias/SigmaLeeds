@@ -19,7 +19,7 @@ count "Token --color-bg-surface órfão" grep -hnE "color-bg-surface" static/scr
 count "alert()/confirm() em JS"        grep -hcE "\balert\(|\bconfirm\(" static/script.js
 count "Botão só-ícone sem aria-label"  bash -c "grep -hE '<button[^>]*onclick[^>]*><i data-lucide' templates/index.html static/script.js | grep -v 'aria-label'"
 count "Typo 'sera(o)'"                 grep -hnF "sera(o)" static/script.js
-count "Inline style com 5+ propriedades" bash -c "grep -hcE 'style=\"[^\"]*;[^\"]*;[^\"]*;[^\"]*;[^\"]*' templates/index.html"
+count "Inline style com 5+ propriedades" bash -c "grep -hE 'style=\"[^\"]*;[^\"]*;[^\"]*;[^\"]*;[^\"]*' templates/index.html"
 
 echo ""
 echo "Para zerar (meta):"

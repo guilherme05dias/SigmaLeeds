@@ -58,15 +58,14 @@
                     <div class="col-left">
                         <section class="campaign-card">
                             <h3>1. Importar Contatos</h3>
-                            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:stretch;">
+                            <div class="import-upload-row">
                                 <div id="upload-area" class="upload-area" onclick="document.getElementById('fileExcel').click()">
                                     <p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p>
                                     <p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>
                                     <input type="file" id="fileExcel" accept=".xlsx" hidden>
                                 </div>
-                                <button type="button" class="btn-danger"
-                                    onclick="downloadTemplateWorkbook()"
-                                    style="width: 150px; height: auto; min-height: 40px; padding: 0 12px; border-color: var(--color-border); color: var(--color-text-secondary);">
+                                <button type="button" class="btn-danger btn-template-download"
+                                    onclick="downloadTemplateWorkbook()">
                                     <i data-lucide="download" size="16"></i>
                                     Modelo
                                 </button>
@@ -149,9 +148,8 @@
                               </button>
                             </div>
                             
-                            <div style="margin-top: 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <div class="attachment-row">
                                 <button class="btn-danger" id="btn-attach-media" type="button"
-                                        style="width: auto; padding: 0 16px; border-color: var(--color-border); color: var(--color-text-secondary);"
                                         onclick="document.getElementById('fileAtt').click()">
                                     <i data-lucide="paperclip" size="14"></i> Anexar Mídia
                                 </button>
@@ -255,14 +253,14 @@
                             </div>
 
                             <div id="campaign-progress" class="progress-container hidden">
-                                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+                                <div class="progress-header">
                                     <span>Progresso</span>
                                     <span id="progPct">0%</span>
                                 </div>
                                 <div class="progress-bar-bg">
                                     <div class="progress-bar-fill" id="progressBar"></div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 500;">
+                                <div class="progress-stats">
                                     <span style="color: var(--color-success-text)">Enviados: <span id="progSent">0</span></span>
                                     <span style="color: var(--color-danger-text)">Erros: <span id="progFailed">0</span></span>
                                     <span id="progTotalCap" style="color: var(--color-text-tertiary)">Total: 0</span>
@@ -278,22 +276,22 @@
                 <h1>Histórico</h1>
                 <p class="subtitle">Campanhas finalizadas e relatórios.</p>
                 
-                <div class="filters-container" style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end; background:var(--color-bg-secondary); padding:15px; border-radius:8px;">
-                    <div style="flex:1">
-                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Pesquisar</label>
-                        <input type="text" id="historySearch" placeholder="Nome da campanha..." style="width:100%; height:36px; padding:0 12px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                <div class="filters-container history-filters">
+                    <div class="history-filter-field history-filter-field--grow">
+                        <label class="history-filter-label">Pesquisar</label>
+                        <input type="text" id="historySearch" class="history-filter-input" placeholder="Nome da campanha...">
                     </div>
-                    <div style="width:150px">
-                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">De</label>
-                        <input type="date" id="historyDateFrom" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    <div class="history-filter-field history-filter-field--w150">
+                        <label class="history-filter-label">De</label>
+                        <input type="date" id="historyDateFrom" class="history-filter-input history-filter-input--narrow">
                     </div>
-                    <div style="width:150px">
-                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Até</label>
-                        <input type="date" id="historyDateTo" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    <div class="history-filter-field history-filter-field--w150">
+                        <label class="history-filter-label">Até</label>
+                        <input type="date" id="historyDateTo" class="history-filter-input history-filter-input--narrow">
                     </div>
-                    <div style="width:180px">
-                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Ordenar por</label>
-                        <select id="historySort" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    <div class="history-filter-field history-filter-field--w180">
+                        <label class="history-filter-label">Ordenar por</label>
+                        <select id="historySort" class="history-filter-input history-filter-input--narrow">
                             <option value="date_desc">Mais recentes</option>
                             <option value="date_asc">Mais antigas</option>
                             <option value="rate_desc">Maior entrega</option>
@@ -302,9 +300,9 @@
                             <option value="failed_asc">Menos falhas</option>
                         </select>
                     </div>
-                    <div style="width:180px">
-                        <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--color-text-secondary)">Status</label>
-                        <select id="historyStatus" style="width:100%; height:36px; padding:0 8px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-primary); color:var(--color-text-primary)">
+                    <div class="history-filter-field history-filter-field--w180">
+                        <label class="history-filter-label">Status</label>
+                        <select id="historyStatus" class="history-filter-input history-filter-input--narrow">
                             <option value="all">Todas</option>
                             <option value="successful">Sucesso Total</option>
                             <option value="failed">Com Falhas</option>
@@ -314,11 +312,11 @@
                     </div>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div class="history-results-row">
                     <span id="historyResultCount" style="font-size:12px; color:var(--color-text-secondary); font-weight:500"></span>
                 </div>
                 
-                <div id="historyEmptyState" class="hidden" style="padding:60px 20px; text-align:center; background:var(--color-bg-secondary); border:1px dashed var(--color-border); border-radius:8px; margin-bottom:20px;">
+                <div id="historyEmptyState" class="hidden history-empty-state">
                     <i data-lucide="search-x" size="48" style="color:var(--color-text-secondary); margin-bottom:12px;"></i>
                     <h3 style="margin-bottom:8px; color:var(--color-text-primary)">Nenhuma campanha encontrada</h3>
                     <p style="font-size:14px; color:var(--color-text-secondary)">Tente ajustar seus filtros ou busca.</p>
@@ -353,7 +351,7 @@
                         <h3>Sessão de Logs</h3>
                         <span class="link" style="font-size:12px; cursor:pointer" onclick="clearLogs()">Limpar</span>
                     </div>
-                    <div class="monitor-box" id="monitor-logs" style="background:var(--color-monitor-bg); color:var(--color-monitor-text); padding:16px; border-radius:8px; font-family:'Courier New', monospace; font-size:12px; height:400px; overflow-y:auto;">
+                    <div class="monitor-box" id="monitor-logs">
                     </div>
                 </section>
             </div>
@@ -496,11 +494,11 @@
                     <i data-lucide="loader" class="animate-spin" size="32"></i>
                     <p style="margin-top: 12px; font-size: 12px;">Iniciando motor...</p>
                 </div>
-                <p id="connectorNodeOffline" class="hidden" style="margin-top: 12px; font-size: 12px; color: var(--color-warning); background: var(--color-warning-bg); border: 1px solid var(--color-warning); border-radius: 6px; padding: 8px 12px;">
+                <p id="connectorNodeOffline" class="hidden connector-offline-notice">
                     Motor Node offline. Aguardando reinicialização...
                 </p>
                 <div id="qrContainer" class="hidden">
-                    <img id="qrImage" src="" style="width: 250px; height: 250px; border: 1px solid var(--color-border); padding: 8px; border-radius: 8px;">
+                    <img id="qrImage" class="qr-image" src="">
                 </div>
                 <button type="button" class="btn-reset-session" onclick="resetWhatsAppSession()">
                     Sessão travada? Resetar e gerar novo QR
@@ -534,7 +532,7 @@
     <!-- History Details Modal -->
     <div id="historyDetailsModal" class="modal hidden">
         <div class="modal-content" style="max-width: 900px; width: 95%;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div class="history-details-header">
                 <div>
                     <h3 id="details-campaign-name">Detalhes da Campanha</h3>
                     <p id="details-campaign-date" style="font-size: 12px; color: var(--color-text-secondary);"></p>
@@ -579,11 +577,11 @@
                 </table>
             </div>
 
-            <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
-                <button id="btn-retry-failed" class="btn-primary" style="width: auto; padding: 0 20px; background: var(--color-warning-dark); border-color: var(--color-warning-dark);" onclick="retryFailedMessages()">
+            <div class="history-details-actions">
+                <button id="btn-retry-failed" class="btn-primary btn-retry-failed" onclick="retryFailedMessages()">
                     <i data-lucide="rotate-ccw" size="14"></i> RETENTAR ERROS
                 </button>
-                <button class="btn-danger" style="width: auto; padding: 0 20px; border-color: var(--color-border); color: var(--color-text-secondary);" onclick="closeHistoryDetails()">FECHAR</button>
+                <button class="btn-danger btn-history-close" onclick="closeHistoryDetails()">FECHAR</button>
             </div>
         </div>
     </div>
@@ -614,8 +612,8 @@
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary"
-            onclick="closeSpintaxModal()" style="width: auto; height: 38px; background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: 6px; font-weight: 500; padding: 0 16px; cursor: pointer;">Cancelar</button>
+          <button type="button" class="btn btn-secondary spintax-cancel-btn"
+            onclick="closeSpintaxModal()">Cancelar</button>
           <button type="button" class="btn btn-primary"
             onclick="insertSpintax()" style="width: auto; height: 38px; margin-bottom: 0;">Inserir</button>
         </div>
