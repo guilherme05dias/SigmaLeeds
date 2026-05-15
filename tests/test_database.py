@@ -129,3 +129,23 @@ def test_import_normalizes_header_accents():
             os.remove(path)
 
     assert res['imported'] == 1
+
+def test_campaign_counts_duplicates():
+    c_id = create_campaign('Dup Test', 'Ola {nome}')
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Nome", "Numero"])
+    ws.append(["Joao", "11999998888"])
+    ws.append(["Maria", "11999998888"])
+    ws.append(["Ana", "21988887777"])
+    path = "test_dup.xlsx"
+    wb.save(path)
+    try:
+        res = import_contacts_from_xlsx(c_id, path)
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
+
+    assert res['total'] == 3
+    assert res['imported'] == 2
+    assert res['duplicates_skipped'] == 1

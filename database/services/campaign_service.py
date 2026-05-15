@@ -162,7 +162,9 @@ def import_contacts_from_xlsx(campaign_id: int, xlsx_path: str) -> dict:
             with conn:
                 cursor = conn.cursor()
                 cursor.executemany("INSERT OR IGNORE INTO campaign_contacts (campaign_id, name, phone, company, extra_fields) VALUES (?, ?, ?, ?, ?)", rows_to_insert)
-                results["imported"] = cursor.rowcount
+                inserted = cursor.rowcount
+                results["imported"] = inserted
+                results["duplicates_skipped"] = max(0, len(rows_to_insert) - inserted)
         finally:
             conn.close()
     except Exception:

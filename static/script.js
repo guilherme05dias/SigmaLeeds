@@ -237,6 +237,7 @@ async function handleImport(file) {
             window.importedContacts = data.contacts;
             
             renderSummaryCards(data.data);
+            showImportDiscardToast(data.data);
             renderContactsTable(data.contacts);
             renderVariableChips(data.contacts);
             updatePreview();
@@ -268,11 +269,28 @@ function renderSummaryCards(summary) {
     const sumReady = document.getElementById('sumReady');
     const sumInvalid = document.getElementById('sumInvalid');
     const sumBlacklist = document.getElementById('sumBlacklist');
-    
+    const sumDuplicates = document.getElementById('sumDuplicates');
+    const errorCount = summary.error_count ?? (summary.errors || []).length;
+
     if (sumTotal) sumTotal.textContent = summary.total || 0;
     if (sumReady) sumReady.textContent = summary.imported || 0;
-    if (sumInvalid) sumInvalid.textContent = (summary.errors || []).length;
+    if (sumInvalid) sumInvalid.textContent = errorCount;
     if (sumBlacklist) sumBlacklist.textContent = summary.skipped_blacklist || 0;
+    if (sumDuplicates) sumDuplicates.textContent = summary.duplicates_skipped || 0;
+}
+
+function showImportDiscardToast(summary) {
+    const errorCount = summary.error_count ?? (summary.errors || []).length;
+    const parts = [];
+
+    if (summary.duplicates_skipped) parts.push(`${summary.duplicates_skipped} duplicada(s)`);
+    if (errorCount) parts.push(`${errorCount} com erro`);
+    if (summary.skipped_blacklist) parts.push(`${summary.skipped_blacklist} em blacklist`);
+
+    if (parts.length) {
+        showToast(`Atencao: ${parts.join(', ')} ignoradas. Veja o console para detalhes.`, 'info');
+        if (summary.errors && summary.errors.length) console.warn('Linhas com erro:', summary.errors);
+    }
 }
 
 function renderVariableChips(contacts) {

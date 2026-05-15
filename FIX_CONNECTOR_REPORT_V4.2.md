@@ -104,3 +104,16 @@ Validacao:
 - `python -m pytest tests/ license/ -v` -> `15 passed`
 - `python -c "import app; print('OK')"` -> `OK`
 - Headers gerados por `build_template_workbook()` -> `['Nome', 'Numero', 'Empresa', 'Adicional1', 'Adicional2', 'Adicional3']`
+
+## Import de contatos: duplicatas e erros visiveis
+
+| Caso | Antes | Depois |
+|---|---|---|
+| Phone duplicado | Ignorado pelo `INSERT OR IGNORE` sem contagem | `duplicates_skipped` calculado e exibido no card DUPLICADOS |
+| Phone invalido/vazio | Ficava em `errors`, sem detalhe acionavel na UI | API retorna `error_count`/`errors[:50]`; UI mostra invalidos e toast |
+| Blacklist | Contava separado, sem entrar no alerta pos-import | Toast inclui `skipped_blacklist` quando houver descarte |
+
+Validacao:
+- `python -m pytest tests/ license/ -v` -> `16 passed in 3.05s`.
+- `python -c "import app; print('OK')"` -> `OK`.
+- Toast novo: `Atencao: N duplicada(s), M com erro, K em blacklist ignoradas. Veja o console para detalhes.`
