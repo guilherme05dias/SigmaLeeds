@@ -201,3 +201,10 @@ Validacao:
 - Fix: `uploadAttachment` valida 16 MB, envia `FormData` para `/api/upload-attachment`, atualiza `#attFileName` e mostra toast success.
 - Bonus: `clearAttachment` chama `/api/clear-attachment` e reseta input/label para uso futuro.
 - Commit: `fix: implementa uploadAttachment para anexo global`.
+
+## UX do anexo global
+- Antes: anexo carregado aparecia como texto pequeno solto, sem feedback visual forte nem acao de remover.
+- Depois: `attachment-chip` mostra paperclip, nome com ellipsis e botao X ao lado do `Anexar Midia`.
+- `uploadAttachment` revela o chip e reidrata Lucide; cancelamento/erro/tamanho invalido ocultam o chip.
+- `clearAttachment` usa o botao X para chamar `/api/clear-attachment`, resetar input/label e esconder o chip.
+- Commit: `fix: chip visual com botao de remover para anexo global`.

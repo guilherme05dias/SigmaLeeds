@@ -140,12 +140,21 @@
                               </button>
                             </div>
                             
-                            <div style="margin-top: 16px;">
-                                <button class="btn-danger" style="width: auto; padding: 0 16px; border-color: var(--color-border); color: var(--color-text-secondary);" onclick="document.getElementById('fileAtt').click()">
+                            <div style="margin-top: 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <button class="btn-danger" id="btn-attach-media" type="button"
+                                        style="width: auto; padding: 0 16px; border-color: var(--color-border); color: var(--color-text-secondary);"
+                                        onclick="document.getElementById('fileAtt').click()">
                                     <i data-lucide="paperclip" size="14"></i> Anexar Mídia
                                 </button>
                                 <input type="file" id="fileAtt" hidden onchange="uploadAttachment(this)">
-                                <span id="attFileName" style="font-size: 11px; margin-left: 10px; color: var(--color-text-tertiary);">Nenhum arquivo</span>
+
+                                <div id="attChip" class="attachment-chip hidden" role="status">
+                                    <i data-lucide="paperclip" size="14"></i>
+                                    <span id="attFileName" class="attachment-chip__name">Nenhum arquivo</span>
+                                    <button type="button" class="attachment-chip__remove" onclick="clearAttachment()" aria-label="Remover anexo global">
+                                        <i data-lucide="x" size="14"></i>
+                                    </button>
+                                </div>
                             </div>
                         </section>
 

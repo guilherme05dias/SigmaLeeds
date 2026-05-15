@@ -403,6 +403,51 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
     background: var(--color-brand-light);
 }
 
+.attachment-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 12px;
+    background: var(--color-info-bg);
+    color: var(--color-info-text);
+    border: 1px solid var(--color-brand-muted);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    max-width: 360px;
+}
+
+.attachment-chip svg,
+.attachment-chip .lucide {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.attachment-chip__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
+}
+
+.attachment-chip__remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-info-text);
+    padding: 2px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.attachment-chip__remove:hover {
+    background: var(--color-brand-light);
+}
+
 /* WhatsApp Preview */
 #message-preview-container {
     padding: 20px;

@@ -86,8 +86,10 @@ function getFilename(path) {
 async function uploadAttachment(input) {
     const file = input.files && input.files[0];
     const label = document.getElementById('attFileName');
+    const chip = document.getElementById('attChip');
     if (!file) {
         if (label) label.textContent = 'Nenhum arquivo';
+        if (chip) chip.classList.add('hidden');
         return;
     }
 
@@ -96,6 +98,7 @@ async function uploadAttachment(input) {
         alert('Arquivo maior que 16 MB. O WhatsApp não aceita mídias acima desse limite.');
         input.value = '';
         if (label) label.textContent = 'Nenhum arquivo';
+        if (chip) chip.classList.add('hidden');
         return;
     }
 
@@ -109,22 +112,27 @@ async function uploadAttachment(input) {
         });
         if (data.success) {
             if (label) label.textContent = file.name;
+            if (chip) chip.classList.remove('hidden');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             showToast(`Anexo "${file.name}" carregado. Sera enviado em todas as mensagens.`, 'success');
         } else {
             alert('Erro ao anexar arquivo: ' + (data.error || 'desconhecido'));
             input.value = '';
             if (label) label.textContent = 'Nenhum arquivo';
+            if (chip) chip.classList.add('hidden');
         }
     } catch (err) {
         alert('Erro ao enviar arquivo: ' + err.message);
         input.value = '';
         if (label) label.textContent = 'Nenhum arquivo';
+        if (chip) chip.classList.add('hidden');
     }
 }
 
 async function clearAttachment() {
     const label = document.getElementById('attFileName');
     const fileInput = document.getElementById('fileAtt');
+    const chip = document.getElementById('attChip');
     try {
         await api('/api/clear-attachment', { method: 'POST' });
     } catch (err) {
@@ -132,6 +140,7 @@ async function clearAttachment() {
     }
     if (fileInput) fileInput.value = '';
     if (label) label.textContent = 'Nenhum arquivo';
+    if (chip) chip.classList.add('hidden');
     showToast('Anexo global removido.', 'info');
 }
 
