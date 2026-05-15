@@ -100,7 +100,7 @@ function createMainWindow(port) {
         height: 800,
         minWidth: 1024,
         minHeight: 680,
-        title: 'ZapManager Pro v4.0',
+        title: 'ZapManager Pro v4.2.1',
         icon: path.join(projectRoot, 'resources', 'icon.ico'),
         show: false,
         webPreferences: {
