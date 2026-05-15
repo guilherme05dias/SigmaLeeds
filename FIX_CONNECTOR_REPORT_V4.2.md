@@ -221,3 +221,13 @@ Validacao:
 - Filtros Historico, Monitor, edicao inline e remanescentes pesados migraram para classes CSS.
 - `scripts/ux_check.sh`: contador inline corrigido para contar matches reais, nao a linha `0` do `grep -c`.
 - Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 4.97s`.
+
+## Historico real + modo dark
+- `ux_check` final: Google Fonts=0; Hex HTML=0; Emoji=0; bg-surface=0; alert/confirm=23; botao sem aria=0; `sera(o)`=0; inline>=5=0.
+| Campanha exemplo | Antes | Depois |
+|---|---:|---:|
+| total/sent/failed/invalid | 0/0/0/0 | 4/1/1/1 |
+- Print descritivo: tema dark aplicado em Campanhas, Historico, Monitor e Licenca; toast/badges seguem legiveis por tokens.
+- Dark toggle: sidebar usa moon/sun, persiste `zap-theme` em localStorage e sincroniza label no load.
+- Revisar visualmente em dark: toast colors, status badges, modal overlays, WhatsApp preview, onboarding wizard, license page.
+- Validacao: `node --check static/script.js`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 4.40s`.

@@ -38,10 +38,15 @@
                 </div>
             </nav>
 
-            <div style="margin-top: auto; padding-bottom: 16px;">
+            <div class="sidebar-footer">
                 <div class="nav-item" onclick="openConnector()">
                     <i data-lucide="smartphone" size="16"></i> Conectar WhatsApp
                 </div>
+                <button id="theme-toggle" class="theme-toggle" type="button"
+                        onclick="toggleTheme()" aria-label="Alternar tema claro/escuro">
+                    <i data-lucide="moon" size="16" id="theme-toggle-icon"></i>
+                    <span id="theme-toggle-label">Modo escuro</span>
+                </button>
             </div>
         </aside>
 

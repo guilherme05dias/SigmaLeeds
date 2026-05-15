@@ -13,6 +13,35 @@ const getToken = () =>
     document.querySelector('meta[name="zap-token"]')
         ?.getAttribute('content') ?? '';
 
+// Tema: lê preferência salva e aplica antes do primeiro paint.
+(function initTheme() {
+    const saved = localStorage.getItem('zap-theme');
+    const theme = saved === 'dark' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+})();
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('zap-theme', next);
+    updateThemeToggleLabel(next);
+}
+
+function updateThemeToggleLabel(theme) {
+    const icon = document.getElementById('theme-toggle-icon');
+    const label = document.getElementById('theme-toggle-label');
+    if (icon) icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+    if (label) label.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Após DOM pronto e lucide hidratado, sincroniza label inicial.
+document.addEventListener('DOMContentLoaded', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    updateThemeToggleLabel(current);
+});
+
 (function() {
     const _fetch = window.fetch.bind(window);
     window.fetch = function(url, opts) {
