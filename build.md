@@ -83,6 +83,61 @@ Electron (ZapManager Pro.exe)
        -> spawn <resources>/node/node.exe server.js
 ```
 
+## Checklist de validacao pre-distribuicao (CRITICO)
+
+Antes de distribuir o instalador, validar:
+
+1. PyInstaller rodou com sucesso e o app.exe esta atualizado:
+
+```powershell
+Get-Item electron/resources/engine/app.exe | Select Name,LastWriteTime,Length
+```
+
+2. `server.js` sincronizado (este foi o bug recorrente da v4.2.1/4.2.2):
+
+```powershell
+diff whatsapp-motor/server.js electron/resources/engine/whatsapp-motor/server.js
+```
+
+Saida deve ser vazia.
+
+3. Fix de ATTACHMENTS_ROOT presente no bundle:
+
+```powershell
+Select-String "ZAP_ATTACHMENTS_ROOT" electron/dist/win-unpacked/resources/engine/whatsapp-motor/server.js
+```
+
+Deve retornar pelo menos 1 linha.
+
+4. node.exe portatil presente no bundle:
+
+```powershell
+Get-Item electron/dist/win-unpacked/resources/node/node.exe | Select Length
+```
+
+Esperado >= 60MB.
+
+5. whatsapp-web.js presente no bundle:
+
+```powershell
+Test-Path electron/dist/win-unpacked/resources/engine/whatsapp-motor/node_modules/whatsapp-web.js/index.js
+```
+
+Esperado: `True`.
+
+6. Smoke do app.exe (boot programatico, sem janela):
+
+```powershell
+Start-Process electron/resources/engine/app.exe -WindowStyle Hidden
+Start-Sleep -Seconds 12
+$r = Invoke-WebRequest http://127.0.0.1:5050/ -UseBasicParsing
+Stop-Process -Name app -Force
+Stop-Process -Name node -Force
+if ($r.StatusCode -eq 200) { Write-Host "OK" -ForegroundColor Green } else { Write-Host "FALHA" -ForegroundColor Red }
+```
+
+7. Enviar para maquina destino e rodar `scripts/verify_install.ps1` ANTES de instalar.
+
 ## Troubleshooting
 
 - "Servidor nao respondeu em 60s": o `app.exe` nao subiu. Cheque se ha antivirus bloqueando (PyInstaller bundles as vezes sao marcados como falso positivo).
