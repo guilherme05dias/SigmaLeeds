@@ -234,7 +234,29 @@ def get_campaign_stats(campaign_id: int) -> dict:
 def get_campaign_history() -> list:
     conn = get_connection()
     try:
-        return [dict(row) for row in conn.execute("SELECT * FROM campaigns ORDER BY created_at DESC").fetchall()]
+        rows = conn.execute("""
+            SELECT
+                c.id,
+                c.name,
+                c.message_template,
+                c.attachment_path,
+                c.account_id,
+                c.status,
+                c.created_at,
+                c.started_at,
+                c.finished_at,
+                COALESCE(SUM(CASE WHEN cc.id IS NOT NULL THEN 1 ELSE 0 END), 0) AS total_contacts,
+                COALESCE(SUM(CASE WHEN cc.status='ENVIADO' THEN 1 ELSE 0 END), 0) AS sent,
+                COALESCE(SUM(CASE WHEN cc.status='ERRO' THEN 1 ELSE 0 END), 0) AS failed,
+                COALESCE(SUM(CASE WHEN cc.status='INVÁLIDO' THEN 1 ELSE 0 END), 0) AS invalid,
+                COALESCE(SUM(CASE WHEN cc.status='PENDENTE' THEN 1 ELSE 0 END), 0) AS pending,
+                COALESCE(SUM(CASE WHEN cc.status='BLACKLIST' THEN 1 ELSE 0 END), 0) AS blacklist
+            FROM campaigns c
+            LEFT JOIN campaign_contacts cc ON cc.campaign_id = c.id
+            GROUP BY c.id
+            ORDER BY c.created_at DESC
+        """).fetchall()
+        return [dict(row) for row in rows]
     except Exception:
         _log.exception("Falha ao ler histórico de campanhas", extra={"context": "get_campaign_history"})
         return []
@@ -259,8 +281,14 @@ def get_campaign_details(campaign_id: int) -> dict:
     try:
         campaign = conn.execute("SELECT * FROM campaigns WHERE id = ?", (campaign_id,)).fetchone()
         if not campaign: return None
+        campaign_dict = dict(campaign)
+        stats = get_campaign_stats(campaign_id)
+        campaign_dict["total_contacts"] = stats["total"]
+        campaign_dict["sent"] = stats["sent"]
+        campaign_dict["failed"] = stats["failed"]
+        campaign_dict["invalid"] = stats["invalid"]
         contacts = conn.execute("SELECT * FROM campaign_contacts WHERE campaign_id = ? ORDER BY id ASC", (campaign_id,)).fetchall()
-        return {"campaign": dict(campaign), "contacts": [dict(c) for c in contacts]}
+        return {"campaign": campaign_dict, "contacts": [dict(c) for c in contacts]}
     except Exception:
         _log.exception("Falha ao buscar detalhes da campanha", extra={"context": "get_campaign_details"})
         return None

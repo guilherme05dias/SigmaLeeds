@@ -16,7 +16,7 @@ count "Google Fonts links"             grep -hE "fonts.googleapis|googleapis.com
 count "Hex hardcoded em HTML"          grep -hnE '#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}\b' templates/index.html
 count "Emoji unicode (↓ literal)"      grep -hnF "↓" templates/index.html static/script.js
 count "Token --color-bg-surface órfão" grep -hnE "color-bg-surface" static/script.js
-count "alert()/confirm() em JS"        grep -hcE "\balert\(|\bconfirm\(" static/script.js
+count "alert()/confirm() em JS"        grep -hE "\balert\(|\bconfirm\(" static/script.js
 count "Botão só-ícone sem aria-label"  bash -c "grep -hE '<button[^>]*onclick[^>]*><i data-lucide' templates/index.html static/script.js | grep -v 'aria-label'"
 count "Typo 'sera(o)'"                 grep -hnF "sera(o)" static/script.js
 count "Inline style com 5+ propriedades" bash -c "grep -hE 'style=\"[^\"]*;[^\"]*;[^\"]*;[^\"]*;[^\"]*' templates/index.html"
