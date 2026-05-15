@@ -20,14 +20,24 @@ function startPython() {
         pythonProcess = spawn('python', ['app.py'], {
             cwd: projectRoot,
             windowsHide: true,
-            stdio: 'pipe'
+            stdio: 'pipe',
+            env: {
+                ...process.env,
+                ZAP_NO_BROWSER: '1'
+            }
         });
     } else {
         const exe = path.join(process.resourcesPath, 'engine', 'app.exe');
+        const nodeExe = path.join(process.resourcesPath, 'node', 'node.exe');
         pythonProcess = spawn(exe, [], {
             cwd: path.dirname(exe),
             windowsHide: true,
-            stdio: 'pipe'
+            stdio: 'pipe',
+            env: {
+                ...process.env,
+                ZAP_NO_BROWSER: '1',
+                ZAP_NODE_EXE: nodeExe
+            }
         });
     }
     pythonProcess.stderr?.on('data', d => console.log('[Python]', d.toString()));

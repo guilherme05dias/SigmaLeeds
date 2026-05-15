@@ -101,11 +101,12 @@ def _spawn_node_with_job(node_script_path: str):
     Quando Python morre (qualquer motivo), Windows mata Node.
     """
     node_dir = os.path.dirname(os.path.abspath(node_script_path))
+    node_exe = os.environ.get("ZAP_NODE_EXE") or "node"
 
     CREATE_NO_WINDOW = 0x08000000
 
     proc = subprocess.Popen(
-        ["node", "server.js"],
+        [node_exe, "server.js"],
         cwd=node_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -1295,6 +1296,7 @@ if __name__ == '__main__':
                 time.sleep(0.5)
         webbrowser.open(f"http://127.0.0.1:{port}")
 
-    threading.Thread(target=open_browser, daemon=True).start()
+    if os.environ.get("ZAP_NO_BROWSER") != "1":
+        threading.Thread(target=open_browser, daemon=True).start()
     
     uvicorn.run(app, host="127.0.0.1", port=port)

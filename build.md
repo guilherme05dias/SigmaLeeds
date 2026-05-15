@@ -1,96 +1,99 @@
-# Build — ZapManager Pro v4.0
+# Build - ZapManager Pro v4.2.0
 
-## Pré-requisitos
-- Node.js 18+ instalado
-- Python 3.8+ instalado
-- PyInstaller: `pip install pyinstaller`
-- Pillow (para gerar ícone): `pip install Pillow`
+## Pre-requisitos
+- Node.js 18+ instalado (apenas para BUILD; o instalador final nao exige Node no destino)
+- Python 3.10+ com pip
+- PyInstaller: `pip install pyinstaller pillow`
 
-## Gerar ícone placeholder (primeira vez)
+## Setup unico (primeira vez)
+
+### 1. Icone
 
 ```powershell
-pip install Pillow
 python scripts/criar_icone.py
 ```
 
-Isto cria `resources/icon.ico`.
-
-## Modo desenvolvimento (sem empacotar)
+### 2. Node.js portatil (sera embutido no instalador)
 
 ```powershell
-cd electron
-npm install
-npm start
+New-Item -ItemType Directory -Force -Path electron/resources/node
+Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.18.0/node-v20.18.0-win-x64.zip" -OutFile "node.zip"
+Expand-Archive -Path node.zip -DestinationPath tmp_node
+Copy-Item tmp_node/node-v20.18.0-win-x64/node.exe electron/resources/node/node.exe
+Remove-Item -Recurse -Force tmp_node, node.zip
 ```
 
-O Electron irá:
-1. Exibir splash screen
-2. Spawnar `python app.py` em background
-3. Fazer scan nas portas `5050–5099` até encontrar o FastAPI
-4. Abrir a janela principal com a interface
-
-> **Observação:** O `app.py` hoje abre o navegador padrão automaticamente (via `webbrowser.open()`).
-> Quando rodado dentro do Electron, isso cria uma janela duplicada no Chrome.
-> Para uma experiência limpa, remova o bloco `open_browser()` do final do `app.py` quando empacotar.
-
-## Build do instalador Windows
+### 3. Dependencias do motor (serao empacotadas)
 
 ```powershell
-# 1. Build do frontend React (se aplicável)
-npm run build  # na raiz do projeto
+cd whatsapp-motor
+npm install --production
+cd ..
+```
 
-# 2. Empacotar Python com PyInstaller
-pyinstaller --onefile --noconsole --name app `
-  --distpath electron/resources/engine `
-  --add-data "templates;templates" `
-  --add-data "static;static" `
-  --add-data "database;database" `
-  --add-data "license;license" `
-  --add-data "api;api" `
-  --add-data "whatsapp-motor;whatsapp-motor" `
-  app.py
+### 4. Dependencias do Electron
 
-# 3. Build do Electron
+```powershell
 cd electron
 npm install
+cd ..
+```
+
+## Build completo
+
+```powershell
+# 1. PyInstaller - empacota Python em app.exe (com whatsapp-motor + node_modules)
+pyinstaller app.spec --distpath electron/resources/engine --clean
+
+# 2. Electron builder - gera o instalador NSIS
+cd electron
 npm run build:installer
+cd ..
 ```
 
-Instalador gerado em: `electron/dist/ZapManager Pro Setup 4.0.0.exe`
+Instalador gerado em: `electron/dist/ZapManager Pro Setup 4.2.0.exe` (~150 MB).
 
-## Arquitetura de processos
+## Validacao local (sem instalar)
 
-```
-Electron (main.js)
-  └─ spawn python app.py
-       └─ spawn node whatsapp-motor/server.js  (já feito pelo app.py)
-```
-
-O Electron NÃO spawna o Node diretamente, porque o `app.py` já faz isso em
-`@app.on_event("startup")`. Isso evita conflito na porta 3001.
-
-## Verificar após instalar
-- App abre com splash screen
-- Interface carrega normalmente
-- QR Code aparece ao conectar WhatsApp
-- Fechar o app encerra o Python em background (e o Node por consequência, pois é spawned pelo Python)
-
-## Teste de aceitação em modo desenvolvimento
+Apos o build, verificar que:
 
 ```powershell
-cd electron
-npm install
-npm start
+Test-Path electron/dist/win-unpacked/resources/engine/app.exe
+Test-Path electron/dist/win-unpacked/resources/engine/whatsapp-motor/node_modules/whatsapp-web.js
+Test-Path electron/dist/win-unpacked/resources/node/node.exe
 ```
 
-Verificar:
-- Splash screen "Iniciando o servidor..." aparece
-- Após alguns segundos, janela principal abre com a interface
-- Interface funciona normalmente (QR Code, campanhas, etc.)
-- Fechar a janela encerra Python e Node:
+Todos devem retornar `True`.
+
+## Instalacao em outra maquina
+
+1. Copiar `ZapManager Pro Setup 4.2.0.exe` para a maquina destino.
+2. Executar. Windows SmartScreen vai mostrar "Windows protected your PC" - clique em "More info" -> "Run anyway" (instalador nao esta assinado).
+3. NSIS pergunta diretorio de instalacao.
+4. Apos instalar, abre pelo menu Iniciar "ZapManager Pro".
+5. Splash screen aparece, depois a janela principal.
+6. Conectar WhatsApp via QR code.
+
+## Arquitetura de processos (runtime)
+
+```text
+Electron (ZapManager Pro.exe)
+  -> spawn app.exe  (env: ZAP_NO_BROWSER=1, ZAP_NODE_EXE=<resources>/node/node.exe)
+       -> spawn <resources>/node/node.exe server.js
+```
+
+## Troubleshooting
+
+- "Servidor nao respondeu em 60s": o `app.exe` nao subiu. Cheque se ha antivirus bloqueando (PyInstaller bundles as vezes sao marcados como falso positivo).
+- QR Code nao aparece: motor Node travou no startup. Use o botao "Resetar sessao" no modal de conector, ou apague `%LOCALAPPDATA%/ZapManagerPro/session/`.
+- Mensagens nao enviam: confirme que Chrome ou Edge esta instalado na maquina.
+
+## Validacao
 
 ```powershell
-# Após fechar — não deve aparecer nada:
-Get-Process python -ErrorAction SilentlyContinue
-Get-Process node -ErrorAction SilentlyContinue
+Test-Path electron/resources/node/node.exe
+Test-Path whatsapp-motor/node_modules/whatsapp-web.js
+python -m pytest tests/ license/ -v
 ```
+
+Esperado: `node.exe` existe (~85 MB), `whatsapp-web.js` existe e a suite retorna `16 passed`.

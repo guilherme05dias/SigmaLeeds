@@ -40,3 +40,4 @@ build/
 release/
 electron/dist/
 electron/resources/engine/
+electron/resources/node/
