@@ -87,6 +87,7 @@ from automation_state import CampaignRunner
 import re
 from pathlib import Path
 import secrets
+import sys
 from fastapi.responses import Response
 
 import subprocess
@@ -94,6 +95,18 @@ import ctypes
 import ctypes.wintypes
 import threading as _threading
 import urllib.request as _urlreq
+
+def _runtime_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+def _resource_path(*parts: str) -> str:
+    external = os.path.join(_runtime_base_dir(), *parts)
+    if os.path.exists(external):
+        return external
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(bundle_dir, *parts)
 
 def _spawn_node_with_job(node_script_path: str):
     """
@@ -326,9 +339,8 @@ async def lifespan(app: FastAPI):
     
         # Iniciar Node.js em background
     import subprocess
-    import sys
     
-    node_script = os.path.join(os.path.dirname(__file__), "whatsapp-motor", "server.js")
+    node_script = _resource_path("whatsapp-motor", "server.js")
     if os.path.exists(node_script):
         node_process = _spawn_node_with_job(node_script)
         
@@ -371,8 +383,9 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Session-Token"],
 )
 
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+static_dir = _resource_path("static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -612,7 +625,7 @@ def _run_automation():
 
 @app.get("/")
 async def serve_index():
-    html = Path("templates/index.html").read_text(encoding="utf-8")
+    html = Path(_resource_path("templates", "index.html")).read_text(encoding="utf-8")
     html = html.replace(
         "</head>",
         f'<meta name="zap-token" content="{SESSION_TOKEN}"></head>'

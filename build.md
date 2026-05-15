@@ -44,6 +44,7 @@ cd ..
 ```powershell
 # 1. PyInstaller - empacota Python em app.exe (com whatsapp-motor + node_modules)
 pyinstaller app.spec --distpath electron/resources/engine --clean
+Copy-Item whatsapp-motor electron/resources/engine/whatsapp-motor -Recurse -Force
 
 # 2. Electron builder - gera o instalador NSIS
 cd electron
