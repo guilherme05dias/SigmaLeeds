@@ -161,3 +161,12 @@ Validacao:
 Validacao:
 - `rg -n "<emoji-list>" templates/index.html static/script.js static/style.css` -> sem resultados.
 - `python -m pytest tests/ license/ -v` -> `16 passed in 2.23s`.
+
+## Ajuste visual dos icones Lucide
+
+- Antes: SVGs dos chips e botoes pequenos podiam renderizar maiores que o texto.
+- Depois: `.var-chip` tem `gap: 6px`; SVG interno fica fixo em `14x14`.
+- `.btn-danger` e `.btn-link-danger` restringem Lucide para `14x14`.
+- `.btn-close-modal` restringe Lucide para `14x14`.
+- `.icon-9` força o `x` do botao inline de remover PDF para `9x9`, alinhado ao pai de `14px`.
+- Visual esperado: icone e texto do chip com proporcao uniforme e respiro consistente.

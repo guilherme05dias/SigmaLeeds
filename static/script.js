@@ -399,14 +399,14 @@ function renderContactsTable(contacts) {
                         <i data-lucide="paperclip" size="14"></i>
                     </label>
                     ${c.attachment_path ? `
-                    <button onclick="removeContactAttachment(${c.id}, this)"
+                    <button class="icon-9" onclick="removeContactAttachment(${c.id}, this)"
                         title="Remover PDF"
                         style="position:absolute; top:-6px; right:-6px;
                                width:14px; height:14px; border-radius:50%;
                                background:var(--color-danger); color:white;
                                border:none; cursor:pointer; font-size:9px;
                                display:flex; align-items:center; justify-content:center;
-                               line-height:1; padding:0;" aria-label="Remover PDF"><i data-lucide="x" size="9"></i></button>
+                               line-height:1; padding:0;" aria-label="Remover PDF"><i data-lucide="x"></i></button>
                     ` : ''}
                 </div>
             </td>
