@@ -236,6 +236,7 @@ async function handleImport(file) {
         if (data.success) {
             currentCampaignId = data.data.campaign_id;
             window.importedContacts = data.contacts;
+            const filename = file?.name || '';
             
             renderSummaryCards(data.data);
             showImportDiscardToast(data.data);
@@ -245,6 +246,9 @@ async function handleImport(file) {
             
             uploadArea.classList.add('hidden');
             document.getElementById('import-summary').classList.remove('hidden');
+            const fnameEl = document.getElementById('summary-filename');
+            if (fnameEl) fnameEl.textContent = filename ? `Planilha: ${filename}` : 'Planilha importada';
+            lucide.createIcons();
         } else {
             alert(data.error || "Erro ao importar.");
             resetUploadArea();
@@ -259,10 +263,41 @@ async function handleImport(file) {
 function resetUploadArea() {
     const area = document.getElementById('upload-area');
     if (area) {
-        area.innerHTML = '<p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p><p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>';
+        renderUploadAreaIdle(area);
         area.classList.remove('hidden');
     }
     document.getElementById('import-summary').classList.add('hidden');
+}
+
+function renderUploadAreaIdle(area) {
+    area.innerHTML = `
+        <p>Arraste o arquivo .xlsx aqui ou <span class="link">clique para selecionar</span></p>
+        <p style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px">nome, número, empresa e campos personalizados</p>
+        <input type="file" id="fileExcel" accept=".xlsx" hidden onchange="if (this.files.length) handleImport(this.files[0])">
+    `;
+}
+
+async function removeSpreadsheet() {
+    if (!confirm('Remover a planilha atual? Os contatos importados nesta campanha continuam no histórico, mas você poderá importar uma nova planilha.')) return;
+
+    window.importedContacts = [];
+    const summary = document.getElementById('import-summary');
+    if (summary) summary.classList.add('hidden');
+    const uploadArea = document.getElementById('upload-area');
+    if (uploadArea) {
+        renderUploadAreaIdle(uploadArea);
+        uploadArea.classList.remove('hidden');
+    }
+    const tbody = document.getElementById('contactsBody');
+    if (tbody) tbody.innerHTML = '';
+    ['sumTotal', 'sumReady', 'sumInvalid', 'sumBlacklist', 'sumDuplicates'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0';
+    });
+    const fileInput = document.getElementById('fileExcel');
+    if (fileInput) fileInput.value = '';
+    if (typeof updatePreview === 'function') updatePreview();
+    showToast('Planilha removida. Você pode importar outra.', 'info');
 }
 
 function renderSummaryCards(summary) {
@@ -302,7 +337,7 @@ function renderVariableChips(contacts) {
     const wrap = document.getElementById('var-chips');
     if (!wrap || !contacts || contacts.length === 0) return;
     
-    const defaultVars = ['nome', 'numero', 'empresa', 'adicional1', 'adicional2', 'adicional3'];
+    const defaultVars = ['nome', 'empresa', 'adicional1', 'adicional2', 'adicional3'];
     let extraVars = [];
     try {
         const extra = JSON.parse(contacts[0].extra_fields || '{}');
@@ -498,7 +533,6 @@ function updatePreview() {
     const substitutions = {
         nome: c.name || 'Cliente',
         empresa: c.company || 'Empresa',
-        numero: c.phone || 'Número',
     };
 
     if (c.extra_fields) {

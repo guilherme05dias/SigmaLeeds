@@ -205,6 +205,38 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
     grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.summary-title {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.btn-link-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--color-danger-text);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    min-height: 32px;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.btn-link-danger:hover {
+    background: var(--color-danger-bg);
+}
+
 .summary-card {
     padding: 12px 16px;
     border-radius: 6px;

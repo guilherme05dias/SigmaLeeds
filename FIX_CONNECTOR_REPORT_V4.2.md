@@ -131,3 +131,17 @@ Validacao:
 - `python -c "import app; print('OK')"` -> `OK`.
 
 **ATENCAO:** enviar varias mensagens em sequencia para o mesmo numero aumenta risco de bloqueio pelo WhatsApp; o operador deve avaliar a lista antes de iniciar.
+
+## UX Campanhas: remover `{numero}` e planilha
+
+Linhas alteradas:
+- `templates/index.html:123 -> 130`: placeholder removeu `{numero}` e virou `Ola {nome}, a {empresa} tem uma novidade...`.
+- `templates/index.html:126 -> removida`: chip `numero` foi retirado dos chips fixos.
+- `templates/index.html:76 -> 77-83`: summary ganhou titulo da planilha e botao `Remover planilha`.
+- `static/script.js:305 -> 340`: `defaultVars` nao inclui mais `numero`.
+- `static/script.js:501 -> 533-536`: `substitutions` nao substitui mais `numero`.
+- `static/script.js:246-247 -> 247-251/280-300`: import oculta upload, mostra filename e `removeSpreadsheet()` reseta a UI.
+- `static/style.css:208-238`: estilos `.summary-header`, `.summary-title` e `.btn-link-danger` usando tokens existentes.
+
+Validacao:
+- `python -m pytest tests/ license/ -v` -> `16 passed in 2.51s`.
