@@ -1289,6 +1289,11 @@ async def rest_set_config(req: SaveConfigRequest):
     return {"success": True, "data": None}
 
 if __name__ == '__main__':
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8", errors="replace")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8", errors="replace")
+
     def get_local_ip():
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
