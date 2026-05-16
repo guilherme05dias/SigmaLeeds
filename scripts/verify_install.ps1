@@ -32,12 +32,18 @@ $browserPaths = @(
     "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
 )
 $browser = $browserPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-Check "Microsoft Edge ou Google Chrome instalado" ($null -ne $browser) "Encontrado: $browser"
+# A partir da v4.2.4 o instalador embute Chromium proprio em resources/chromium.
+# Browser do sistema vira opcional (so e usado como fallback se a deteccao do bundle falhar).
+if ($null -ne $browser) {
+    Check "Browser do sistema (opcional, usado como fallback)" $true "Encontrado: $browser"
+} else {
+    Write-Host "[INFO]  Sem browser do sistema. Sera usado o Chromium embutido (v4.2.4+)." -ForegroundColor Cyan
+}
 
-# 3. Espaco em disco no LocalAppData (precisa de ~200MB)
+# 3. Espaco em disco no LocalAppData (precisa de ~500MB para instalar com Chromium embutido)
 $drive = (Get-Item $env:LOCALAPPDATA).PSDrive
 $freeMB = [math]::Round($drive.Free / 1MB)
-Check "Espaco em disco no LocalAppData >= 500MB" ($freeMB -ge 500) "$freeMB MB livres em $($drive.Name):"
+Check "Espaco em disco no LocalAppData >= 800MB" ($freeMB -ge 800) "$freeMB MB livres em $($drive.Name):"
 
 # 4. Permissao de escrita em LocalAppData
 $testPath = Join-Path $env:LOCALAPPDATA "zap_write_test_$([guid]::NewGuid()).tmp"

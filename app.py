@@ -117,6 +117,17 @@ def _spawn_node_with_job(node_script_path: str):
     node_exe = os.environ.get("ZAP_NODE_EXE") or "node"
     env = os.environ.copy()
     env["ZAP_ATTACHMENTS_ROOT"] = str(UPLOAD_ROOT)
+    # Se Electron passou ZAP_BUNDLED_CHROMIUM, propaga; senão tenta inferir
+    # a partir do diretório do app (PyInstaller frozen → resources/chromium/chrome.exe).
+    if not env.get("ZAP_BUNDLED_CHROMIUM"):
+        try:
+            if getattr(sys, "frozen", False):
+                exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+                candidate = os.path.normpath(os.path.join(exe_dir, "..", "chromium", "chrome.exe"))
+                if os.path.exists(candidate):
+                    env["ZAP_BUNDLED_CHROMIUM"] = candidate
+        except Exception:
+            pass
 
     CREATE_NO_WINDOW = 0x08000000
 

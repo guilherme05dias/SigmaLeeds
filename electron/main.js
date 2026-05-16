@@ -29,6 +29,7 @@ function startPython() {
     } else {
         const exe = path.join(process.resourcesPath, 'engine', 'app.exe');
         const nodeExe = path.join(process.resourcesPath, 'node', 'node.exe');
+        const bundledChromium = path.join(process.resourcesPath, 'chromium', 'chrome.exe');
         pythonProcess = spawn(exe, [], {
             cwd: path.dirname(exe),
             windowsHide: true,
@@ -36,7 +37,8 @@ function startPython() {
             env: {
                 ...process.env,
                 ZAP_NO_BROWSER: '1',
-                ZAP_NODE_EXE: nodeExe
+                ZAP_NODE_EXE: nodeExe,
+                ZAP_BUNDLED_CHROMIUM: bundledChromium
             }
         });
     }

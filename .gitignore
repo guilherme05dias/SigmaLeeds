@@ -41,3 +41,4 @@ release/
 electron/dist/
 electron/resources/engine/
 electron/resources/node/
+electron/resources/chromium/

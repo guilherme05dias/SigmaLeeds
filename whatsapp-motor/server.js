@@ -26,31 +26,42 @@ if (!fs.existsSync(appDataDir)) {
     fs.mkdirSync(appDataDir, { recursive: true });
 }
 
-// Procura Chrome ou Edge em locais comuns do Windows. Retorna null se nada for encontrado.
+// Resolve o caminho do browser para o Puppeteer.
+// Prioridade:
+//   1. ZAP_BROWSER_PATH (override manual via env var)
+//   2. ZAP_BUNDLED_CHROMIUM (Chrome for Testing embutido no instalador)
+//   3. Google Chrome instalado no sistema
+//   4. Microsoft Edge instalado no sistema (último recurso, autenticação WA pode falhar)
+// Chrome é preferido sobre Edge: Puppeteer é desenvolvido contra Chrome e
+// whatsapp-web.js tem problemas conhecidos de handshake com Edge headless.
 function getChromePath() {
+    if (process.env.ZAP_BROWSER_PATH && fs.existsSync(process.env.ZAP_BROWSER_PATH)) {
+        console.log(`[Browser] Usando override ZAP_BROWSER_PATH: ${process.env.ZAP_BROWSER_PATH}`);
+        return process.env.ZAP_BROWSER_PATH;
+    }
+    if (process.env.ZAP_BUNDLED_CHROMIUM && fs.existsSync(process.env.ZAP_BUNDLED_CHROMIUM)) {
+        console.log(`[Browser] Usando Chromium embutido: ${process.env.ZAP_BUNDLED_CHROMIUM}`);
+        return process.env.ZAP_BUNDLED_CHROMIUM;
+    }
     const candidates = [
-        // Edge (vem com Windows 10/11)
-        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-        'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-        // Chrome (instalação típica)
+        // Chrome (preferido pelo Puppeteer)
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        // Chrome instalado por usuário (sem admin)
         path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-        // Edge Dev/Beta/Canary (fallback raro)
+        // Edge (fallback — autenticação WhatsApp pode falhar em algumas versões)
+        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
         'C:\\Program Files (x86)\\Microsoft\\Edge Beta\\Application\\msedge.exe',
         'C:\\Program Files (x86)\\Microsoft\\Edge Dev\\Application\\msedge.exe',
     ];
-
     for (const p of candidates) {
         if (p && fs.existsSync(p)) {
             console.log(`[Browser] Encontrado: ${p}`);
             return p;
         }
     }
-
-    console.error('[Browser] ERRO: Nenhum browser (Edge/Chrome) encontrado nos paths esperados.');
-    console.error('[Browser] Verifique se Microsoft Edge ou Google Chrome estao instalados.');
+    console.error('[Browser] ERRO: Nenhum browser encontrado.');
+    console.error('[Browser] Esperado: Chromium embutido em ZAP_BUNDLED_CHROMIUM, ou Chrome/Edge instalado.');
     return null;
 }
 
@@ -99,10 +110,10 @@ function armSessionWatchdog() {
     watchdogTimer = setTimeout(() => {
         if (!currentQR && !isReady) {
             initAttempts += 1;
-            console.log(`[WA] Watchdog: nenhum QR/ready em 45s (tentativa ${initAttempts}/2)`);
+            console.log(`[WA] Watchdog: nenhum QR/ready em 90s (tentativa ${initAttempts}/3)`);
 
-            if (initAttempts >= 2) {
-                console.error('[WA] Watchdog: sessao corrompida apos 2 tentativas. Aguardando intervencao manual.');
+            if (initAttempts >= 3) {
+                console.error('[WA] Watchdog: sem QR/ready apos 3 tentativas. Cheque /diagnostics para ver browser detectado.');
                 return;
             }
 
@@ -127,7 +138,7 @@ function armSessionWatchdog() {
                 armSessionWatchdog();
             }, 1500);
         }
-    }, 45000);
+    }, 90000);
 }
 
 // Ao gerar QR Code
