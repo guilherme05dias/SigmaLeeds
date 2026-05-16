@@ -67,7 +67,7 @@ from database.services.template_xlsx import build_template_workbook
 from database.services.account_service import (
     get_all_accounts, update_account_status
 )
-from license.manager import check_license, get_current_plan_limits, activate_license, get_daily_limit
+from license.manager import check_license, get_current_plan_limits, activate_license, get_daily_safety_limit
 from license.hardware import get_hardware_id
 from api.models import (
     StartCampaignRequest, ImportContactsRequest,
@@ -473,16 +473,20 @@ def _run_automation():
             if not _wait_for_send_window():
                 break
 
-            # Verificação de limite diário por plano
-            daily_limit = get_daily_limit()
-            if daily_limit and daily_limit < 999999:
+            # Limite diário de segurança (anti-banimento WhatsApp).
+            # NAO bloqueia o envio; apenas avisa UMA VEZ por campanha quando ultrapassa.
+            safety_limit = get_daily_safety_limit()
+            if safety_limit > 0 and not getattr(runner, "_safety_warned_today", False):
                 sent_today = get_today_sent_count()
-                if sent_today >= daily_limit:
-                    msg = f"[LIMITE] Limite diário de {daily_limit} envios atingido para seu plano. Campanha pausada."
+                if sent_today >= safety_limit:
+                    msg = (
+                        f"[ATENÇÃO] Voce ultrapassou {safety_limit} envios hoje. "
+                        f"Volumes altos aumentam o risco de banimento do numero pelo WhatsApp. "
+                        f"Considere pausar e retomar amanha."
+                    )
                     logger.warning(msg)
                     publish_log_threadsafe(msg, "WARN")
-                    runner.update_progress(status="Limite diário atingido")
-                    break
+                    runner._safety_warned_today = True
 
             row_id = contact['id']
             nome = contact['name'] or "Cliente"
@@ -1018,17 +1022,12 @@ async def rest_start_campaign(req: StartCampaignRequest):
 
     update_campaign_message(req.campaign_id, req.message)
 
-    daily_limit = get_daily_limit()
-    today_sent = get_today_sent_count()
-    remaining = daily_limit - today_sent
+    # Single-tier: sem limite hard. Operador recebe aviso quando passa do
+    # daily_safety_limit (system_config), mas a campanha NUNCA e bloqueada aqui.
+    effective_limit = req.limit if req.limit else 999999
 
-    if remaining <= 0:
-        return {
-            "success": False,
-            "error": f"Limite diário atingido ({daily_limit} envios). Tente novamente amanhã."
-        }
-
-    effective_limit = min(req.limit if req.limit else 999999, remaining)
+    # Reseta o flag "ja avisei do limite hoje" no inicio de cada campanha
+    runner._safety_warned_today = False
 
     lo = max(15, min(45, req.min_interval or 15))
     hi = max(lo, min(45, req.max_interval or 30))
@@ -1304,6 +1303,21 @@ async def rest_update_template(id: int, req: CreateTemplateRequest):
 async def rest_delete_template(id: int):
     if delete_template(id): return {"success": True, "data": None}
     return {"success": False, "error": "Failed"}
+
+@app.get("/api/config/safety-limit")
+async def rest_get_safety_limit():
+    return {"success": True, "data": {"daily_safety_limit": get_daily_safety_limit()}}
+
+@app.post("/api/config/safety-limit")
+async def rest_set_safety_limit(payload: dict):
+    try:
+        value = int(payload.get("daily_safety_limit", 500))
+    except (TypeError, ValueError):
+        return JSONResponse({"success": False, "error": "Valor invalido"}, status_code=400)
+    if value < 0 or value > 10000:
+        return JSONResponse({"success": False, "error": "Limite fora do range (0 a 10000)"}, status_code=400)
+    set_config("daily_safety_limit", value)
+    return {"success": True, "data": {"daily_safety_limit": value}}
 
 @app.get("/api/config/send-window")
 async def rest_get_send_window():

@@ -1,4 +1,5 @@
 private_key.pem
+keygen_history.json
 *.pem
 *.key
 !license/public_key.pem

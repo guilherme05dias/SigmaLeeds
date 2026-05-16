@@ -5,32 +5,37 @@ from license.hardware import get_hardware_id
 
 LICENSE_FILE = os.path.join(os.environ.get('APPDATA', ''), 'ZapManagerPro', 'license.dat')
 
-PLAN_LIMITS = {
-    "starter": {
-        "max_accounts": 1,
-        "max_dispatches_day": 300,
-        "templates": 5,
-        "scheduling": False,
-        "multi_attachment": False,
-        "export_xlsx": False
-    },
-    "pro": {
-        "max_accounts": 3,
-        "max_dispatches_day": 1000,
-        "templates": 999999,
-        "scheduling": True,
-        "multi_attachment": True,
-        "export_xlsx": True
-    },
-    "agency": {
-        "max_accounts": 999,
-        "max_dispatches_day": 999999,
-        "templates": 999999,
-        "scheduling": True,
-        "multi_attachment": True,
-        "export_xlsx": True
-    }
+# A partir de v4.2.5 o produto e single-tier (plano unico = "pro").
+# Nao ha limite de mensagens enforced pela licenca. O usuario configura
+# um daily_safety_limit em system_config para receber AVISO (nao bloqueio)
+# quando o volume diario aumenta o risco de banimento pelo WhatsApp.
+SINGLE_PLAN = {
+    "max_accounts": 999,
+    "max_dispatches_day": 999999,   # nao enforced; soft limit fica em system_config.daily_safety_limit
+    "templates": 999999,
+    "scheduling": True,
+    "multi_attachment": True,
+    "export_xlsx": True
 }
+PLAN_LIMITS = {
+    # Mantemos chaves antigas apontando para SINGLE_PLAN para compatibilidade
+    # com licencas existentes que ainda tem plan="starter"/"agency" no payload.
+    "starter": SINGLE_PLAN,
+    "pro": SINGLE_PLAN,
+    "agency": SINGLE_PLAN,
+}
+
+DEFAULT_DAILY_SAFETY_LIMIT = 500   # mensagens por dia antes de avisar risco de banimento
+
+def get_daily_safety_limit() -> int:
+    """Le limite diario de seguranca configurado pelo operador (system_config),
+    ou retorna o default. Se 0, desativa o aviso."""
+    try:
+        from database.services.config_service import get_config
+        val = get_config("daily_safety_limit", DEFAULT_DAILY_SAFETY_LIMIT)
+        return int(val)
+    except Exception:
+        return DEFAULT_DAILY_SAFETY_LIMIT
 
 def activate_license(key_string: str) -> dict:
     try:
@@ -107,17 +112,9 @@ def get_daily_limit() -> int:
     """
     Retorna o máximo de mensagens permitidas por dia para a licença atual.
     Retorna 999999 se nenhum limite se aplica (plano Agency).
-    Retorna 300 (Starter) em caso de falha de leitura da licença.
+    DEPRECATED desde v4.2.5 — single-tier nao tem limite por licenca.
+    Mantida para compatibilidade com callers antigos; retorna 999999
+    (sem enforcement). O aviso de seguranca usa get_daily_safety_limit().
     """
-    try:
-        info = check_license()
-        plan = info.get("plan", "").lower() if info.get("plan") else "starter"
-        limits = {
-            "starter": 300,
-            "pro": 1000,
-            "agency": 999999,
-        }
-        return limits.get(plan, 300)
-    except Exception:
-        return 300  # fail safe: restringe se licença ilegível
+    return 999999
 

@@ -787,6 +787,41 @@ function toggleDelay() {
     panel.classList.toggle('hidden');
     if (panel.classList.contains('hidden')) icon.style.transform = 'rotate(0deg)';
     else icon.style.transform = 'rotate(90deg)';
+    // Carrega o limite de seguranca da primeira vez que o painel abre
+    if (!panel.classList.contains('hidden')) loadSafetyLimit();
+}
+
+async function loadSafetyLimit() {
+    try {
+        const res = await apiBg('/api/config/safety-limit');
+        const value = res?.data?.daily_safety_limit;
+        if (typeof value === 'number') {
+            const input = document.getElementById('safety-limit-input');
+            if (input) input.value = value;
+        }
+    } catch (e) { /* silencioso — input fica no default */ }
+}
+
+async function saveSafetyLimit() {
+    const input = document.getElementById('safety-limit-input');
+    const status = document.getElementById('safety-limit-status');
+    if (!input) return;
+    const value = parseInt(input.value, 10);
+    if (Number.isNaN(value) || value < 0 || value > 10000) {
+        if (status) status.textContent = 'Valor inválido (0 a 10000).';
+        return;
+    }
+    if (status) status.textContent = 'Salvando...';
+    const res = await api('/api/config/safety-limit', {
+        method: 'POST',
+        body: JSON.stringify({ daily_safety_limit: value }),
+    });
+    if (res?.success) {
+        if (status) status.textContent = value === 0 ? 'Aviso desativado.' : `Aviso ativado em ${value} envios/dia.`;
+        showToast('Limite de segurança salvo.', 'success');
+    } else {
+        if (status) status.textContent = res?.error || 'Falha ao salvar.';
+    }
 }
 
 function toggleSendWindow() {

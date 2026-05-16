@@ -38,9 +38,11 @@ def test_keygen_and_validator():
     assert act_res["valid"] == True, "Manager falhou ao ativar"
     
     limits = license.manager.get_current_plan_limits()
-    assert limits["max_accounts"] == 3, "Limites errados para PRO"
-    assert limits["export_xlsx"] == True, "Limites errados para PRO"
-    print("-> OK: Manager retornou limites do PRO")
+    # Single-tier desde v4.2.5: todas as features liberadas, sem distincao por plano.
+    assert limits["export_xlsx"] == True, "export_xlsx deveria estar liberado"
+    assert limits["scheduling"] == True, "scheduling deveria estar liberado"
+    assert limits["multi_attachment"] == True, "multi_attachment deveria estar liberado"
+    print("-> OK: Manager retornou limites do plano unico")
 
     if os.path.exists(license.manager.LICENSE_FILE):
         os.remove(license.manager.LICENSE_FILE)
