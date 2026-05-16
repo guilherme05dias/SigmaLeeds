@@ -473,20 +473,35 @@ def _run_automation():
             if not _wait_for_send_window():
                 break
 
-            # Limite diário de segurança (anti-banimento WhatsApp).
-            # NAO bloqueia o envio; apenas avisa UMA VEZ por campanha quando ultrapassa.
-            safety_limit = get_daily_safety_limit()
-            if safety_limit > 0 and not getattr(runner, "_safety_warned_today", False):
-                sent_today = get_today_sent_count()
-                if sent_today >= safety_limit:
-                    msg = (
-                        f"[ATENÇÃO] Voce ultrapassou {safety_limit} envios hoje. "
-                        f"Volumes altos aumentam o risco de banimento do numero pelo WhatsApp. "
-                        f"Considere pausar e retomar amanha."
-                    )
-                    logger.warning(msg)
-                    publish_log_threadsafe(msg, "WARN")
-                    runner._safety_warned_today = True
+            # Limite de seguranca anti-banimento (warm-up + safety_limit).
+            # NAO bloqueia: pausa o envio e espera o operador clicar "Aceito o risco".
+            from database.services.safety_service import (
+                get_effective_limit_today, has_consent_today, CONSENT_WARMUP, CONSENT_DAILY
+            )
+            limit_info = get_effective_limit_today()
+            current_limit = limit_info["limit"]
+            consent_type = limit_info["type"]
+            sent_today = get_today_sent_count()
+            if current_limit > 0 and sent_today >= current_limit and not has_consent_today(consent_type):
+                # Sinaliza ao frontend e pausa ate ter consent
+                marker = "[CONSENT_REQUIRED] warmup" if consent_type == CONSENT_WARMUP else "[CONSENT_REQUIRED] daily"
+                publish_log_threadsafe(
+                    f"{marker} limit={current_limit} sent={sent_today}",
+                    "WARN"
+                )
+                runner.update_progress(status=f"Aguardando confirmacao ({sent_today}/{current_limit})")
+                # Loop de espera ate operador aceitar ou parar
+                while not runner.stop_requested:
+                    if has_consent_today(consent_type):
+                        publish_log_threadsafe(
+                            f"[CONSENT_ACCEPTED] Operador aceitou risco. Retomando envio.",
+                            "INFO"
+                        )
+                        runner.update_progress(status="Em andamento")
+                        break
+                    runner.stop_event.wait(timeout=2)
+                if runner.stop_requested:
+                    break
 
             row_id = contact['id']
             nome = contact['name'] or "Cliente"
@@ -887,6 +902,13 @@ async def get_status():
     try:
         resp = http_requests.get("http://127.0.0.1:3001/status", timeout=1).json()
         connected = resp.get("connected", False)
+        if connected:
+            # Registra a 1a conexao do WhatsApp para o warm-up (idempotente).
+            try:
+                from database.services.safety_service import record_first_connection_if_missing
+                record_first_connection_if_missing()
+            except Exception:
+                pass
     except:
         pass
 
@@ -1303,6 +1325,55 @@ async def rest_update_template(id: int, req: CreateTemplateRequest):
 async def rest_delete_template(id: int):
     if delete_template(id): return {"success": True, "data": None}
     return {"success": False, "error": "Failed"}
+
+@app.get("/api/safety/state")
+async def rest_safety_state():
+    """Retorna estado atual: warmup, limite efetivo, sent hoje, consents do dia."""
+    from database.services.safety_service import (
+        get_effective_limit_today, has_consent_today, CONSENT_WARMUP, CONSENT_DAILY
+    )
+    info = get_effective_limit_today()
+    return {
+        "success": True,
+        "data": {
+            "limit_today": info["limit"],
+            "limit_type": info["type"],
+            "sent_today": get_today_sent_count(),
+            "warmup": info["warmup"],
+            "safety_daily": info["safety_daily"],
+            "consent_warmup_today": has_consent_today(CONSENT_WARMUP),
+            "consent_daily_today": has_consent_today(CONSENT_DAILY),
+        }
+    }
+
+
+@app.post("/api/safety/consent")
+async def rest_safety_consent(payload: dict):
+    """Operador aceita o risco de continuar acima do limite. Vale ate fim do dia."""
+    from database.services.safety_service import (
+        register_consent, CONSENT_WARMUP, CONSENT_DAILY, get_effective_limit_today
+    )
+    consent_type = (payload or {}).get("type", "")
+    if consent_type not in (CONSENT_WARMUP, CONSENT_DAILY):
+        return JSONResponse({"success": False, "error": "Tipo invalido"}, status_code=400)
+    info = get_effective_limit_today()
+    register_consent(consent_type, info["limit"], get_today_sent_count())
+    return {"success": True, "data": {"type": consent_type}}
+
+
+@app.get("/api/safety/history")
+async def rest_safety_history():
+    from database.services.safety_service import get_consents_history
+    return {"success": True, "data": get_consents_history()}
+
+
+@app.post("/api/safety/warmup-toggle")
+async def rest_safety_warmup_toggle(payload: dict):
+    """Liga/desliga warmup (operador pode ter numero ja antigo)."""
+    enabled = bool((payload or {}).get("enabled", True))
+    set_config("warmup_enabled", "1" if enabled else "0")
+    return {"success": True, "data": {"warmup_enabled": enabled}}
+
 
 @app.get("/api/config/safety-limit")
 async def rest_get_safety_limit():

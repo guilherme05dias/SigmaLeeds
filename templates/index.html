@@ -58,6 +58,13 @@
                 <h1>Campanhas</h1>
                 <p class="subtitle">Envio de mensagens em massa com inteligência e segurança.</p>
 
+                <!-- Badge de aquecimento (visivel so quando warmup ativo) -->
+                <div id="warmup-banner" class="warmup-banner hidden">
+                    <i data-lucide="thermometer" size="16"></i>
+                    <span id="warmup-banner-text">Aquecimento ativo</span>
+                    <button type="button" class="warmup-banner-link" onclick="openSafetyInfo()">ver detalhes</button>
+                </div>
+
                 <div class="campaign-grid">
                     <!-- Coluna Esquerda -->
                     <div class="col-left">
@@ -501,6 +508,39 @@
                 <button type="button" id="onboardingNextBtn" class="btn-primary" onclick="nextOnboardingStep()">Avançar</button>
                 <button type="button" id="onboardingFinishBtn" class="btn-primary hidden" onclick="completeOnboarding()">Concluir</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de aceite de risco anti-banimento -->
+    <div id="safetyConsentModal" class="modal hidden">
+        <div class="modal-content safety-modal">
+            <div class="safety-icon-wrap">
+                <i data-lucide="shield-alert" size="32"></i>
+            </div>
+            <h3 id="safety-modal-title">Atenção: limite de segurança atingido</h3>
+            <p id="safety-modal-body" class="safety-modal-body"></p>
+            <div class="safety-modal-warning">
+                <strong>Risco real de banimento da conta WhatsApp.</strong>
+                Volumes acima do recomendado, especialmente em números recém-conectados,
+                aumentam a chance da Meta marcar a conta como spammer e bloquear.
+            </div>
+            <p class="safety-modal-confirm-label">
+                Para liberar o restante do dia, marque a opção abaixo:
+            </p>
+            <label class="safety-modal-checkbox">
+                <input type="checkbox" id="safety-consent-checkbox">
+                <span>Estou ciente do risco de banimento e quero continuar mesmo assim.</span>
+            </label>
+            <div class="safety-modal-actions">
+                <button type="button" class="btn-ghost" onclick="cancelSafetyConsent()">Cancelar (manter pausa)</button>
+                <button type="button" class="btn-primary" id="safety-accept-btn" onclick="acceptSafetyConsent()" disabled>
+                    Aceitar risco e continuar
+                </button>
+            </div>
+            <p class="safety-modal-footnote">
+                O aceite fica registrado em <code>safety_consents</code> com data, hora e contagem de envios.
+                Vale para o resto do dia. Amanhã o aviso volta.
+            </p>
         </div>
     </div>
 

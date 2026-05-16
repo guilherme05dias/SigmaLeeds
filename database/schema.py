@@ -101,7 +101,18 @@ MIGRATIONS = [
     # v8
     """ALTER TABLE templates ADD COLUMN variables TEXT DEFAULT '[]'""",
     # v9 — Permite numeros duplicados (mesma campanha, mesmo phone, empresas diferentes)
-    """DROP INDEX IF EXISTS idx_contacts_unique"""
+    """DROP INDEX IF EXISTS idx_contacts_unique""",
+    # v10 — Registro de aceites de risco (warm-up e safety limit)
+    """CREATE TABLE IF NOT EXISTS safety_consents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consent_date TEXT NOT NULL,
+        consent_type TEXT NOT NULL,
+        limit_value INTEGER,
+        sent_count INTEGER,
+        accepted_at TEXT DEFAULT (datetime('now','localtime'))
+    )""",
+    """CREATE INDEX IF NOT EXISTS idx_safety_consents_date_type
+       ON safety_consents(consent_date, consent_type)"""
 ]
 
 def get_connection():

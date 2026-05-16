@@ -1368,3 +1368,130 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
     text-align: center;
     min-height: 18px;
 }
+
+/* --- Anti-banimento: banner warmup + modal de consent --- */
+.warmup-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    background: var(--color-warning-bg);
+    border: 1px solid var(--color-warning);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--color-warning-dark);
+}
+.warmup-banner svg, .warmup-banner .lucide {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+.warmup-banner-link {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--color-warning-dark);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 12px;
+    padding: 0;
+}
+.safety-modal {
+    max-width: 480px;
+    text-align: left;
+}
+.safety-icon-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    color: var(--color-warning-dark);
+}
+.safety-icon-wrap svg, .safety-icon-wrap .lucide {
+    width: 40px;
+    height: 40px;
+}
+.safety-modal h3 {
+    text-align: center;
+    margin: 0 0 12px;
+}
+.safety-modal-body {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    margin-bottom: 16px;
+    text-align: center;
+}
+.safety-modal-warning {
+    background: var(--color-danger-bg);
+    border: 1px solid var(--color-danger-text);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-danger-text);
+    margin-bottom: 16px;
+}
+.safety-modal-confirm-label {
+    font-size: 13px;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+    font-weight: 500;
+}
+.safety-modal-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: var(--color-bg-tertiary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 16px;
+}
+.safety-modal-checkbox input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.safety-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.safety-modal-actions .btn-ghost {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.safety-modal-actions .btn-primary {
+    padding: 8px 16px;
+    background: var(--color-warning-dark);
+    border: 1px solid var(--color-warning-dark);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.safety-modal-actions .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.safety-modal-footnote {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin: 0;
+    text-align: center;
+    line-height: 1.4;
+}
+.safety-modal-footnote code {
+    background: var(--color-bg-tertiary);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+}

@@ -754,11 +754,18 @@ const LOG_MAX_LINES = 200;
 const logSource = new EventSource('/api/logs?token=' + (getToken() || ''));
 logSource.onmessage = (e) => {
     const box = document.getElementById('monitor-logs');
-    if (!box) return;
     const parts = e.data.split('|');
     if (parts.length >= 2) {
         const level = parts[0].toLowerCase();
         const msg = parts.slice(1).join('|');
+
+        // Interceptar marcadores especiais que pedem confirmacao
+        if (msg.indexOf('[CONSENT_REQUIRED]') !== -1) {
+            const consentType = msg.indexOf('warmup') !== -1 ? 'warmup' : 'daily';
+            openSafetyConsentModal(consentType);
+        }
+
+        if (!box) return;
         const div = document.createElement('div');
         div.classList.add('log-line');
         div.style.marginBottom = '4px';
@@ -789,6 +796,117 @@ function toggleDelay() {
     else icon.style.transform = 'rotate(90deg)';
     // Carrega o limite de seguranca da primeira vez que o painel abre
     if (!panel.classList.contains('hidden')) loadSafetyLimit();
+}
+
+// ===== Safety / warm-up =====
+let _pendingConsentType = null;
+
+async function refreshSafetyState() {
+    try {
+        const res = await apiBg('/api/safety/state');
+        if (!res?.success) return;
+        const d = res.data;
+        const banner = document.getElementById('warmup-banner');
+        const text = document.getElementById('warmup-banner-text');
+        if (!banner || !text) return;
+        if (d.warmup && d.warmup.active) {
+            const day = d.warmup.day_number;
+            const lim = d.warmup.limit_today;
+            const sent = d.sent_today;
+            text.textContent = `Aquecimento ativo — dia ${day}, limite hoje ${lim} envios (${sent} usados).`;
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
+        }
+    } catch (e) { /* silencioso */ }
+}
+// Atualiza ao carregar e periodicamente
+setInterval(refreshSafetyState, 30000);
+document.addEventListener('DOMContentLoaded', refreshSafetyState);
+
+function openSafetyConsentModal(consentType) {
+    _pendingConsentType = consentType;
+    const modal = document.getElementById('safetyConsentModal');
+    const title = document.getElementById('safety-modal-title');
+    const body = document.getElementById('safety-modal-body');
+    const cb = document.getElementById('safety-consent-checkbox');
+    const btn = document.getElementById('safety-accept-btn');
+    if (!modal) return;
+
+    apiBg('/api/safety/state').then(res => {
+        const d = res?.data || {};
+        const lim = d.limit_today || '?';
+        const sent = d.sent_today || '?';
+        if (consentType === 'warmup') {
+            if (title) title.textContent = 'Limite de aquecimento atingido';
+            if (body) body.innerHTML = `Você está no <strong>dia ${d.warmup?.day_number || '?'}</strong> de aquecimento. ` +
+                `Limite recomendado para hoje: <strong>${lim} envios</strong>. Já enviou: <strong>${sent}</strong>.`;
+        } else {
+            if (title) title.textContent = 'Limite diário de segurança atingido';
+            if (body) body.innerHTML = `Você já enviou <strong>${sent}</strong> mensagens hoje. ` +
+                `Limite de segurança configurado: <strong>${lim} envios/dia</strong>.`;
+        }
+    });
+
+    if (cb) cb.checked = false;
+    if (btn) btn.disabled = true;
+    modal.classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function cancelSafetyConsent() {
+    const modal = document.getElementById('safetyConsentModal');
+    if (modal) modal.classList.add('hidden');
+    _pendingConsentType = null;
+    showToast('Campanha continua pausada. Clique em Iniciar Disparos novamente para retomar amanhã.', 'info');
+}
+
+async function acceptSafetyConsent() {
+    if (!_pendingConsentType) return;
+    const btn = document.getElementById('safety-accept-btn');
+    if (btn) btn.disabled = true;
+    const res = await api('/api/safety/consent', {
+        method: 'POST',
+        body: JSON.stringify({ type: _pendingConsentType }),
+    });
+    if (res?.success) {
+        showToast('Risco aceito. Campanha retomando.', 'info');
+        const modal = document.getElementById('safetyConsentModal');
+        if (modal) modal.classList.add('hidden');
+        _pendingConsentType = null;
+        refreshSafetyState();
+    } else {
+        if (btn) btn.disabled = false;
+        showToast(res?.error || 'Falha ao registrar aceite', 'error');
+    }
+}
+
+// Habilita botao Aceitar somente quando checkbox marcada
+document.addEventListener('DOMContentLoaded', () => {
+    const cb = document.getElementById('safety-consent-checkbox');
+    const btn = document.getElementById('safety-accept-btn');
+    if (cb && btn) {
+        cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+    }
+});
+
+function openSafetyInfo() {
+    // Abre uma janela basica com info do warmup (poderia virar modal proprio depois)
+    apiBg('/api/safety/state').then(res => {
+        const d = res?.data || {};
+        const w = d.warmup || {};
+        alert(
+            `Status anti-banimento:\n\n` +
+            `Aquecimento: ${w.active ? 'ATIVO' : 'inativo'}\n` +
+            `Dia desde 1ª conexão: ${w.day_number || '-'}\n` +
+            `Limite hoje: ${d.limit_today} envios\n` +
+            `Já enviados hoje: ${d.sent_today}\n` +
+            `Limite após aquecimento: ${d.safety_daily} envios/dia\n\n` +
+            `Aceites hoje:\n` +
+            `  • Warmup: ${d.consent_warmup_today ? 'SIM (liberado)' : 'não'}\n` +
+            `  • Diário: ${d.consent_daily_today ? 'SIM (liberado)' : 'não'}`
+        );
+    });
 }
 
 async function loadSafetyLimit() {
