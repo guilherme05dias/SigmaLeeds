@@ -124,7 +124,7 @@ async function uploadAttachment(input) {
 
     // Limite simples: 16 MB (limite do WhatsApp para midia)
     if (file.size > 16 * 1024 * 1024) {
-        alert('Arquivo maior que 16 MB. O WhatsApp não aceita mídias acima desse limite.');
+        showToast('Arquivo maior que 16 MB. WhatsApp não aceita acima desse limite.', 'error');
         input.value = '';
         if (label) label.textContent = 'Nenhum arquivo';
         if (chip) chip.classList.add('hidden');
@@ -145,13 +145,13 @@ async function uploadAttachment(input) {
             if (typeof lucide !== 'undefined') lucide.createIcons();
             showToast(`Anexo "${file.name}" carregado. Sera enviado em todas as mensagens.`, 'success');
         } else {
-            alert('Erro ao anexar arquivo: ' + (data.error || 'desconhecido'));
+            showToast('Erro ao anexar arquivo: ' + (data.error || 'desconhecido'), 'error');
             input.value = '';
             if (label) label.textContent = 'Nenhum arquivo';
             if (chip) chip.classList.add('hidden');
         }
     } catch (err) {
-        alert('Erro ao enviar arquivo: ' + err.message);
+        showToast('Erro ao enviar arquivo: ' + err.message, 'error');
         input.value = '';
         if (label) label.textContent = 'Nenhum arquivo';
         if (chip) chip.classList.add('hidden');
@@ -178,7 +178,7 @@ async function uploadContactAttachment(contactId, input) {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith('.pdf')) {
-        alert('Apenas arquivos PDF são permitidos.');
+        showToast('Apenas arquivos PDF são permitidos.', 'warning');
         input.value = '';
         return;
     }
@@ -198,10 +198,10 @@ async function uploadContactAttachment(contactId, input) {
             renderContactsTable(window.importedContacts);
             showToast(`PDF "${data.filename}" anexado com sucesso.`, 'success');
         } else {
-            alert('Erro ao anexar PDF: ' + data.error);
+            showToast('Erro ao anexar PDF: ' + data.error, 'error');
         }
     } catch (err) {
-        alert('Erro ao enviar arquivo: ' + err.message);
+        showToast('Erro ao enviar arquivo: ' + err.message, 'error');
     }
 }
 
@@ -218,7 +218,7 @@ async function removeContactAttachment(contactId, btn) {
             showToast('Anexo removido.', 'info');
         }
     } catch (err) {
-        alert('Erro ao remover anexo: ' + err.message);
+        showToast('Erro ao remover anexo: ' + err.message, 'error');
     }
 }
 
@@ -244,9 +244,48 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3500);
 }
 
+function confirmAsync(message, opts = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        const title = document.getElementById('confirm-modal-title');
+        const body = document.getElementById('confirm-modal-body');
+        const ok = document.getElementById('confirm-modal-ok');
+        const cancel = document.getElementById('confirm-modal-cancel');
+        if (!modal || !ok || !cancel) {
+            const nativeConfirm = window['confirm'];
+            resolve(typeof nativeConfirm === 'function' ? nativeConfirm(message) : false);
+            return;
+        }
+
+        if (title) title.textContent = opts.title || 'Confirmar';
+        if (body) body.textContent = message;
+        ok.textContent = opts.okText || 'Confirmar';
+        cancel.textContent = opts.cancelText || 'Cancelar';
+        ok.classList.toggle('danger', !!opts.danger);
+        modal.classList.remove('hidden');
+
+        function cleanup(result) {
+            modal.classList.add('hidden');
+            ok.onclick = null;
+            cancel.onclick = null;
+            document.removeEventListener('keydown', onKey);
+            resolve(result);
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape') cleanup(false);
+            if (e.key === 'Enter') cleanup(true);
+        }
+
+        ok.onclick = () => cleanup(true);
+        cancel.onclick = () => cleanup(false);
+        document.addEventListener('keydown', onKey);
+    });
+}
+
 async function exportCampaign(campaignId) {
     if (!campaignId) {
-        alert('Nenhuma campanha para exportar.');
+        showToast('Nenhuma campanha para exportar.', 'info');
         return;
     }
     const btn = document.getElementById('btn-export');
@@ -266,7 +305,7 @@ async function exportCampaign(campaignId) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     } catch (err) {
-        alert('Erro ao exportar: ' + err.message);
+        showToast('Erro ao exportar: ' + err.message, 'error');
     } finally {
         if (btn) {
             btn.innerHTML = '<i data-lucide="download" size="14"></i> Exportar Relatório';
@@ -346,12 +385,12 @@ async function handleImport(file) {
             if (fnameEl) fnameEl.textContent = filename ? `Planilha: ${filename}` : 'Planilha importada';
             lucide.createIcons();
         } else {
-            alert(data.error || "Erro ao importar.");
+            showToast(data.error || 'Erro ao importar.', 'error');
             resetUploadArea();
         }
     } catch (e) {
         console.error(e);
-        alert("Erro de conexão.");
+        showToast('Erro de conexão.', 'error');
         resetUploadArea();
     }
 }
@@ -374,7 +413,7 @@ function renderUploadAreaIdle(area) {
 }
 
 async function removeSpreadsheet() {
-    if (!confirm('Remover a planilha atual? Os contatos importados nesta campanha continuam no histórico, mas você poderá importar uma nova planilha.')) return;
+    if (!(await confirmAsync('Remover a planilha atual? Os contatos ficam no histórico.', { okText: 'Remover', danger: true }))) return;
 
     window.importedContacts = [];
     const summary = document.getElementById('import-summary');
@@ -617,7 +656,7 @@ function updateImportCards(contacts) {
 }
 
 async function removeContact(contactId, btn) {
-    if (!confirm("Remover este contato da lista?")) return;
+    if (!(await confirmAsync('Remover este contato da lista?', { okText: 'Remover', danger: true }))) return;
     const row = btn.closest('tr');
     await api(`/api/contacts/${contactId}/remove`, { method: 'DELETE' });
     row.style.opacity = '0.3';
@@ -688,7 +727,10 @@ function insertVar(variable) {
 
 // --- Campaign Controls ---
 async function startCampaign() {
-    if (!window.importedContacts.length) return alert("Importe uma planilha primeiro.");
+    if (!window.importedContacts.length) {
+        showToast('Importe uma planilha primeiro.', 'warning');
+        return;
+    }
     
     const params = {
         campaign_id: currentCampaignId,
@@ -708,7 +750,7 @@ async function startCampaign() {
         document.getElementById('btnStop').disabled = false;
         document.getElementById('campaign-progress').classList.remove('hidden');
     } else {
-        alert(data.error);
+        showToast(data.error || 'Erro ao iniciar campanha.', 'error');
     }
 }
 
@@ -967,16 +1009,11 @@ function openSafetyInfo() {
     apiBg('/api/safety/state').then(res => {
         const d = res?.data || {};
         const w = d.warmup || {};
-        alert(
-            `Status anti-banimento:\n\n` +
-            `Aquecimento: ${w.active ? 'ATIVO' : 'inativo'}\n` +
-            `Dia desde 1ª conexão: ${w.day_number || '-'}\n` +
-            `Limite hoje: ${d.limit_today} envios\n` +
-            `Já enviados hoje: ${d.sent_today}\n` +
-            `Limite após aquecimento: ${d.safety_daily} envios/dia\n\n` +
-            `Aceites hoje:\n` +
-            `  • Warmup: ${d.consent_warmup_today ? 'SIM (liberado)' : 'não'}\n` +
-            `  • Diário: ${d.consent_daily_today ? 'SIM (liberado)' : 'não'}`
+        showToast(
+            `Status anti-banimento: aquecimento ${w.active ? 'ATIVO' : 'inativo'}, ` +
+            `dia ${w.day_number || '-'}, limite hoje ${d.limit_today} envios, ` +
+            `${d.sent_today} enviados hoje.`,
+            'info'
         );
     });
 }
@@ -1327,7 +1364,7 @@ async function openHistoryDetails(id) {
             }
         }
     } catch (e) {
-        alert("Erro ao carregar detalhes: " + e.message);
+        showToast('Erro ao carregar detalhes: ' + e.message, 'error');
     }
 }
 
@@ -1339,7 +1376,7 @@ async function retryFailedMessages() {
     const id = window.viewingCampaignId;
     if (!id) return;
     
-    if (!confirm("Isso irá resetar os contatos com erro e iniciar os disparos imediatamente. Deseja continuar?")) return;
+    if (!(await confirmAsync('Isso irá resetar contatos com erro e iniciar imediatamente. Continuar?', { okText: 'Resetar e iniciar', danger: true }))) return;
 
     try {
         // Pega as configurações de intervalo da tela principal como base
@@ -1363,10 +1400,10 @@ async function retryFailedMessages() {
             document.getElementById('btnStop').disabled = false;
             document.getElementById('campaign-progress').classList.remove('hidden');
         } else {
-            alert(data.error);
+            showToast(data.error || 'Erro ao tentar re-envio.', 'error');
         }
     } catch (e) {
-        alert("Erro ao tentar re-envio: " + e.message);
+        showToast('Erro ao tentar re-envio: ' + e.message, 'error');
     }
 }
 
@@ -1539,7 +1576,7 @@ async function checkConnector() {
 }
 
 async function resetWhatsAppSession() {
-    if (!confirm('Isto vai apagar a sessao salva e gerar um novo QR Code. Continuar?')) return;
+    if (!(await confirmAsync('Isto vai apagar a sessão salva e gerar novo QR. Continuar?', { okText: 'Resetar sessão', danger: true }))) return;
 
     const data = await api('/api/whatsapp/reset', { method: 'POST' });
     if (data.success) {
@@ -1713,10 +1750,10 @@ async function disconnectWhatsApp() {
             // Poll após 3s para pegar o novo QR gerado após logout
             setTimeout(checkConnector, 3000);
         } else {
-            alert(data.error || 'Não foi possível desconectar.');
+            showToast(data.error || 'Não foi possível desconectar.', 'error');
         }
     } catch (e) {
-        alert('Erro de comunicação ao desconectar.');
+        showToast('Erro de comunicação ao desconectar.', 'error');
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -1821,7 +1858,7 @@ function insertSpintax() {
   const inputs = [...document.querySelectorAll('.spintax-input')];
   const values = inputs.map(i => i.value.trim()).filter(v => v);
   if (values.length < 2) {
-    alert('Adicione pelo menos 2 opções para criar uma variação.');
+    showToast('Adicione pelo menos 2 opções para criar uma variação.', 'warning');
     return;
   }
   const syntax = '{' + values.join('|') + '}';
