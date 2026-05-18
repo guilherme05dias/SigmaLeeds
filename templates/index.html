@@ -185,14 +185,18 @@
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                     <div>
                                         <label>Mínimo (segundos)</label>
-                                        <input type="range" min="15" max="60" value="16" id="min-delay" oninput="document.getElementById('min-val').textContent = this.value">
-                                        <span id="min-val" style="font-weight:600; font-size:12px;">16</span>s
+                                        <input type="range" min="30" max="180" value="30" id="min-delay" oninput="onDelayChange()">
+                                        <span id="min-val" style="font-weight:600; font-size:12px;">30</span>s
                                     </div>
                                     <div>
                                         <label>Máximo (segundos)</label>
-                                        <input type="range" min="20" max="120" value="38" id="max-delay" oninput="document.getElementById('max-val').textContent = this.value">
-                                        <span id="max-val" style="font-weight:600; font-size:12px;">38</span>s
+                                        <input type="range" min="30" max="180" value="60" id="max-delay" oninput="onDelayChange()">
+                                        <span id="max-val" style="font-weight:600; font-size:12px;">60</span>s
                                     </div>
+                                </div>
+                                <div id="delay-suggestion" class="delay-suggestion">
+                                    <i data-lucide="info" size="14"></i>
+                                    <span id="delay-suggestion-text">Importe uma planilha para ver a sugestão.</span>
                                 </div>
                                 <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--color-border);">
                                     <label for="safety-limit-input" style="display:block; margin-bottom:6px;">

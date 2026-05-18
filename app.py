@@ -829,8 +829,8 @@ async def legacy_start_campaign(request: Request):
 
     limits = get_current_plan_limits()
 
-    _lo = max(15, min(45, int(data.get("min", 15))))
-    _hi = max(_lo, min(45, int(data.get("max", 30))))
+    _lo = max(30, min(180, int(data.get("min", 30))))
+    _hi = max(_lo, min(180, int(data.get("max", 60))))
 
     params = {
         "msg": data.get("msg", ""),
@@ -1051,8 +1051,8 @@ async def rest_start_campaign(req: StartCampaignRequest):
     # Reseta o flag "ja avisei do limite hoje" no inicio de cada campanha
     runner._safety_warned_today = False
 
-    lo = max(15, min(45, req.min_interval or 15))
-    hi = max(lo, min(45, req.max_interval or 30))
+    lo = max(30, min(180, req.min_interval or 30))
+    hi = max(lo, min(180, req.max_interval or 60))
 
     params = {
         "msg": req.message,

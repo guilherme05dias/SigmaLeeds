@@ -338,6 +338,7 @@ async function handleImport(file) {
             renderContactsTable(data.contacts);
             renderVariableChips(data.contacts);
             updatePreview();
+            if (typeof updateDelaySuggestion === 'function') updateDelaySuggestion();
             
             uploadArea.classList.add('hidden');
             document.getElementById('import-summary').classList.remove('hidden');
@@ -392,6 +393,7 @@ async function removeSpreadsheet() {
     const fileInput = document.getElementById('fileExcel');
     if (fileInput) fileInput.value = '';
     if (typeof updatePreview === 'function') updatePreview();
+    if (typeof updateDelaySuggestion === 'function') updateDelaySuggestion();
     showToast('Planilha removida. Você pode importar outra.', 'info');
 }
 
@@ -624,6 +626,7 @@ async function removeContact(contactId, btn) {
         renderContactsTable(window.importedContacts);
         updateImportCards(window.importedContacts);
         updatePreview();
+        if (typeof updateDelaySuggestion === 'function') updateDelaySuggestion();
     }, 300);
 }
 
@@ -796,6 +799,75 @@ function toggleDelay() {
     else icon.style.transform = 'rotate(90deg)';
     // Carrega o limite de seguranca da primeira vez que o painel abre
     if (!panel.classList.contains('hidden')) loadSafetyLimit();
+}
+
+function onDelayChange() {
+    const minEl = document.getElementById('min-delay');
+    const maxEl = document.getElementById('max-delay');
+    if (!minEl || !maxEl) return;
+
+    const minVal = parseInt(minEl.value, 10);
+    let maxVal = parseInt(maxEl.value, 10);
+    if (maxVal < minVal) {
+        maxVal = minVal;
+        maxEl.value = String(minVal);
+    }
+
+    const minLabel = document.getElementById('min-val');
+    const maxLabel = document.getElementById('max-val');
+    if (minLabel) minLabel.textContent = minVal;
+    if (maxLabel) maxLabel.textContent = maxVal;
+    updateDelaySuggestion();
+}
+
+async function updateDelaySuggestion() {
+    const el = document.getElementById('delay-suggestion-text');
+    if (!el) return;
+
+    const contacts = (window.importedContacts || []).length;
+    if (!contacts) {
+        el.textContent = 'Importe uma planilha para ver a sugestao de intervalo.';
+        return;
+    }
+
+    let limitToday = 300;
+    try {
+        const r = await apiBg('/api/safety/state');
+        if (r?.success) limitToday = r.data.limit_today || 300;
+    } catch (e) {
+        // Mantem o default local se o estado de seguranca nao carregar.
+    }
+
+    if (limitToday <= 0) limitToday = contacts;
+
+    const minVal = parseInt(document.getElementById('min-delay').value, 10);
+    const maxVal = parseInt(document.getElementById('max-delay').value, 10);
+    const avgInterval = (minVal + maxVal) / 2;
+
+    const effective = Math.min(contacts, limitToday);
+    const totalSec = effective * avgInterval;
+    const totalMin = Math.round(totalSec / 60);
+    const totalHr = (totalSec / 3600).toFixed(1);
+
+    const targetWindowSec = 8 * 3600;
+    const recommendedAvg = Math.max(30, Math.round(targetWindowSec / effective));
+
+    let suggestion = `Campanha de ${contacts} contatos, limite hoje ${limitToday}. `;
+    if (effective < contacts) {
+        suggestion += `Apenas ${effective} serão enviados hoje (limite). `;
+    }
+    suggestion += `Com intervalo medio de ${Math.round(avgInterval)}s, leva ~${totalMin} min`;
+    if (totalSec >= 3600) suggestion += ` (${totalHr}h)`;
+    suggestion += '. ';
+
+    if (recommendedAvg > avgInterval * 1.3) {
+        suggestion += `Sugerido: ~${recommendedAvg}s para distribuir em 8h e reduzir risco.`;
+    } else if (recommendedAvg < avgInterval * 0.7) {
+        suggestion += `Pode acelerar ate ~${recommendedAvg}s sem concentrar demais.`;
+    } else {
+        suggestion += 'Intervalo esta adequado para esse volume.';
+    }
+    el.textContent = suggestion;
 }
 
 // ===== Safety / warm-up =====

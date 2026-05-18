@@ -5,8 +5,8 @@ class StartCampaignRequest(BaseModel):
     campaign_id: int
     message: str
     limit: Optional[int] = None
-    min_interval: int = 15
-    max_interval: int = 45
+    min_interval: int = 30
+    max_interval: int = 60
 
 class ImportContactsRequest(BaseModel):
     campaign_id: int
