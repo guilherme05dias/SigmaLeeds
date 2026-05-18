@@ -1428,6 +1428,26 @@ function renderLicenseData(data) {
     badge.className = 'license-status-badge expired';
   }
 
+  // Sincroniza label da sidebar com o status real da licenca
+  const sidebar = document.getElementById('sidebar-license-status');
+  if (sidebar) {
+    sidebar.classList.remove('plan-trial', 'plan-active', 'plan-expired');
+    if (isTrial) {
+      const dr = (typeof data.days_remaining === 'number') ? data.days_remaining : null;
+      sidebar.textContent = dr !== null ? `Trial: ${dr} dia${dr === 1 ? '' : 's'}` : 'Trial';
+      sidebar.classList.add('plan-trial');
+    } else if (data.status === 'active') {
+      sidebar.textContent = 'Licença ativa';
+      sidebar.classList.add('plan-active');
+    } else if (data.status === 'expired') {
+      sidebar.textContent = 'Licença expirada';
+      sidebar.classList.add('plan-expired');
+    } else {
+      sidebar.textContent = 'Licença inválida';
+      sidebar.classList.add('plan-expired');
+    }
+  }
+
   const planEl = document.getElementById('license-plan-name');
   if (planEl) {
     const planMap = { 'starter': 'Starter', 'pro': 'Pro', 'agency': 'Agency', 'trial': 'Versão Trial' };
@@ -1877,3 +1897,5 @@ function insertSpintax() {
 
 loadSendWindowConfig();
 initOnboarding();
+// Carrega status da licenca cedo para popular o label da sidebar no boot.
+loadLicense();

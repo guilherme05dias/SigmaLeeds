@@ -134,6 +134,9 @@ body {
     font-weight: 500;
     color: var(--color-brand);
 }
+.sidebar-logo .plan.plan-trial    { color: var(--color-warning-dark); }
+.sidebar-logo .plan.plan-active   { color: var(--color-success-text); }
+.sidebar-logo .plan.plan-expired  { color: var(--color-danger-text); }
 
 .sidebar-footer {
     margin-top: auto;
