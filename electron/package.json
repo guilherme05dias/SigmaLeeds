@@ -1,6 +1,6 @@
 {
   "name": "zapmanager-pro",
-  "version": "4.2.4",
+  "version": "4.2.5",
   "description": "ZapManager Pro - Automação WhatsApp",
   "main": "main.js",
   "scripts": {
