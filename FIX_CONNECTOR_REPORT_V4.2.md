@@ -238,3 +238,12 @@ Validacao:
 - `body` ganhou transicao 180ms para background/color na troca light/dark.
 - Linha duplicada mantem fundo info e ganha barra lateral azul `box-shadow: inset 3px 0 0 var(--color-info-text)`.
 - Validacao: `ux_check` sem regressao (alert/confirm=23); `node --check`; `python -c "import app; print('OK')"`; `pytest` -> `16 passed in 2.21s`.
+
+## Intervalo 30s + modal confirm
+- Antes: contador equivalente `alert/confirm em JS=24` no baseline local.
+- Depois: `ux_check.sh` via Git Bash -> `alert()/confirm() em JS 0`.
+- Commit: `e863327 feat: intervalo minimo 30s + sugestao proporcional ao volume`.
+- Commit: `dbcf415 refactor: alert/confirm nativos -> showToast/confirmAsync`.
+- Validacao: `node --check static/script.js` OK; `python -c "import app; print('OK')"` OK.
+- Validacao: `python -m pytest tests/ license/ -v` -> `16 passed`.
+- Nota: `bash` do PATH aponta para WSL sem distro; usado `C:\Program Files\Git\bin\bash.exe`.
