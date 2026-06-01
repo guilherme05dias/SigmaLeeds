@@ -466,7 +466,7 @@ def _run_automation():
         count = 0
         recent_results = []
 
-        for contact in pending_contacts:
+        for contact_index, contact in enumerate(pending_contacts):
             if runner.stop_requested or count >= params['limit']:
                 break
 
@@ -520,7 +520,7 @@ def _run_automation():
 
             update_contact_status(row_id, "EM_PROCESSAMENTO")
 
-            msg_cur = render_template(params['msg'], contact)
+            msg_cur = render_template(params['msg'], contact, contact_index)
 
             # Anexo por contato e/ou anexo global. Quando ambos existem, mandamos 2 mensagens:
             # primeiro o per-line com o texto como legenda (personalizado), depois o global sem

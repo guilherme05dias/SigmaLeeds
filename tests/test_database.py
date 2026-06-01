@@ -38,15 +38,15 @@ def test_blacklist():
 def test_template():
     t_id = create_template('Promo', 'Olá {nome}, temos promo para {empresa}. Seu ticket: {ticket}')
     assert t_id > 0
-    
+
     res = render_template('Olá {nome}, temos promo para {empresa}. Seu ticket: {ticket}', {
         'name': 'João',
         'company': 'Tech',
         'extra_fields': '{"ticket": "1234"}'
     })
-    
+
     assert "Olá João, temos promo para Tech. Seu ticket: 1234" in res
-    
+
     res_missing = render_template('Promo: {desconto}.', {})
     assert "{desconto}" in res_missing
 
